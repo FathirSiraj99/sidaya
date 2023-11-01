@@ -1,0 +1,89 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model activity_template {
+  id        String   @id @default(uuid())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  area           area[]
+  activityDetail activity_detail[]
+  problem        problem[]
+}
+
+model activity_detail {
+  id                 String   @id @default(uuid())
+  name               String
+  description        String
+  nthDay             Int      @default(0)
+  time               String
+  formula            Json?
+  activityTemplateId String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  activityTemplate activity_template? @relation(fields: [activityTemplateId], references: [id])
+}
+
+model area {
+  id                 String   @id @default(uuid())
+  name               String
+  capacity           Int      @default(0)
+  feed               Float?   @default(0)
+  volume             Float    @default(0)
+  weight             Float?   @default(0)
+  waterLevel         Int?     @default(0)
+  isActive           Int      @default(0)
+  activityTemplateId String
+  updatedAt          DateTime @default(now())
+  createdAt          DateTime @updatedAt
+
+  activityTemplate activity_template? @relation(fields: [activityTemplateId], references: [id])
+
+  activity activity[]
+}
+
+model activity {
+  id          String   @id @default(uuid())
+  name        String
+  description String
+  dueDate     DateTime
+  formula     Json?
+  areaId      String
+  isCompleted Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  area area? @relation(fields: [areaId], references: [id])
+}
+
+model problem {
+  id                 String   @id @default(uuid())
+  name               String
+  description        String
+  activityTemplateId String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  activity_template activity_template? @relation(fields: [activityTemplateId], references: [id])
+}
+
+model user {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  username String @unique
+
+  password String
+}

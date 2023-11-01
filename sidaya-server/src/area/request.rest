@@ -1,0 +1,30 @@
+@url = http://localhost:4100/api/area
+@id = 78a8ba23-07df-4e43-85df-e79fe360348f
+
+GET {{url}}
+
+###
+GET {{url}}/{{id}}
+
+###
+POST {{url}}
+Content-Type: application/json
+
+{
+    "name": "Kolam Ikan 1", 
+    "capacity": 1000, 
+    "volume": "2", 
+    "weight": "10",
+    "activityTemplateId": "2cda5871-dfc7-47d1-8231-80517fa1b180"    
+}
+
+###
+PATCH {{url}}/{{id}}
+Content-Type: application/json
+
+{
+    "weight": 2
+}
+
+###
+DELETE {{url}}/{{id}}

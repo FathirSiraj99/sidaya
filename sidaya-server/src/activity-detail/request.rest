@@ -1,0 +1,32 @@
+@url = http://localhost:30000/api/activity-detail
+@id = ff10a6c6-e31a-4079-98cb-02302eafb269
+
+GET {{url}}
+
+###
+GET {{url}}/{{id}}
+
+###
+POST {{url}}
+Content-Type: application/json
+
+{
+    "activityTemplateId": "2cda5871-dfc7-47d1-8231-80517fa1b180",
+    "description": "asghhsdfhgsghdf",
+    "formula": [
+        {"name": "berat_ikan", "value": 2, "message": "Pakan"}
+    ],
+    "name": "Aktivitas Lele 2",
+    "nthDay": 1,
+    "time": "10:00",
+}
+###
+PATCH {{url}}/{{id}}
+Content-Type: application/json
+
+{
+    "name": "Menyiapkan Kolam 1"
+}
+
+###
+DELETE {{url}}/{{id}}
