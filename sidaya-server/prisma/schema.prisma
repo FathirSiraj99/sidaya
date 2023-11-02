@@ -10,80 +10,80 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model activity_template {
+model ActivityTemplate {
   id        String   @id @default(uuid())
   name      String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
 
-  area           area[]
-  activityDetail activity_detail[]
-  problem        problem[]
+  area           Area[]
+  activityDetail ActivityDetail[]
+  problem        Problem[]
+
+  @@map(name: "acitivity_template")
 }
 
-model activity_detail {
+model ActivityDetail {
   id                 String   @id @default(uuid())
   name               String
   description        String
-  nthDay             Int      @default(0)
+  nthDay             Int      @default(0) @map(name: "nth_day")
   time               String
   formula            Json?
-  activityTemplateId String
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  activityTemplateId String   @map(name: "activity_template")
+  createdAt          DateTime @default(now()) @map(name: "created_at")
+  updatedAt          DateTime @updatedAt @map(name: "updated_at")
 
-  activityTemplate activity_template? @relation(fields: [activityTemplateId], references: [id])
+  area Area[]
+
+  activityTemplate ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
+
+  @@map(name: "activity_detail")
 }
 
-model area {
+model Area {
   id                 String   @id @default(uuid())
   name               String
   capacity           Int      @default(0)
   feed               Float?   @default(0)
   volume             Float    @default(0)
   weight             Float?   @default(0)
-  waterLevel         Int?     @default(0)
+  waterLevel         Int?     @default(0) @map(name: "water_level")
   isActive           Int      @default(0)
-  activityTemplateId String
-  updatedAt          DateTime @default(now())
-  createdAt          DateTime @updatedAt
+  status             Int?
+  createdAt          DateTime @default(now()) @map(name: "created_at")
+  updatedAt          DateTime @updatedAt @map(name: "updated_at")
+  activityTemplateId String?  @map(name: "activity_template_id")
+  activityDetailId   String?  @map(name: "activity_detail_id")
 
-  activityTemplate activity_template? @relation(fields: [activityTemplateId], references: [id])
+  user             User[]
+  activityTemplate ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
+  ActivityDetail   ActivityDetail?   @relation(fields: [activityDetailId], references: [id])
 
-  activity activity[]
+  @@map(name: "area")
 }
 
-model activity {
-  id          String   @id @default(uuid())
-  name        String
-  description String
-  dueDate     DateTime
-  formula     Json?
-  areaId      String
-  isCompleted Int      @default(0)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  area area? @relation(fields: [areaId], references: [id])
-}
-
-model problem {
+model Problem {
   id                 String   @id @default(uuid())
   name               String
   description        String
-  activityTemplateId String?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  activityTemplateId String?  @map(name: "activity_template_id")
+  createdAt          DateTime @default(now()) @map(name: "created_at")
+  updatedAt          DateTime @updatedAt @map(name: "updated_at")
 
-  activity_template activity_template? @relation(fields: [activityTemplateId], references: [id])
+  activity_template ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
+
+  @@map(name: "problem")
 }
 
-model user {
+model User {
   id        Int      @id @default(autoincrement())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  username  String   @unique
+  password  String
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  Area      Area?    @relation(fields: [areaId], references: [id])
+  areaId    String?  @map(name: "area_id")
 
-  username String @unique
-
-  password String
+  @@map(name: "user")
 }

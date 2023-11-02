@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ActivityDetailDto } from './activity-detail.dto';
 
 @Injectable()
 export class ActivityDetailService {
-  constructor(private db: PrismaService) {}
+  constructor(private db: PrismaService) { }
 
   /**
    * Get All activity_detail
@@ -27,11 +28,11 @@ export class ActivityDetailService {
    * @returns 
    */
   async findAllByTemplate(id: string) {
-      return await this.db.activity_detail.findMany({
-          where: {
-            activityTemplateId: id
-          }
-      })
+    return await this.db.activity_detail.findMany({
+      where: {
+        activityTemplateId: id
+      }
+    })
   }
 
   /**
@@ -59,7 +60,7 @@ export class ActivityDetailService {
    * @param data
    * @returns
    */
-  async createData(data: any) {
+  async createData(data: ActivityDetailDto) {
     return await this.db.activity_detail.create({
       data: data,
     });

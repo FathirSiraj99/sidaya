@@ -1,5 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
 import { ActivityDetailService } from './activity-detail.service';
+import { ActivityDetailDto } from './activity-detail.dto';
 
 @Controller('activity-detail')
 export class ActivityDetailController {
@@ -30,7 +31,7 @@ export class ActivityDetailController {
      * @returns 
      */
     @Post()
-    async create(@Body() body: any) {
+    async create(@Body() body: ActivityDetailDto) {
         return await this.service.createData(body)
     }
 

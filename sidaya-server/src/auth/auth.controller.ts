@@ -17,11 +17,4 @@ export class AuthController {
     return await this.authService.login(dto)
   }
 
-  @UseGuards(AuthGuard)
-  @Get('muhaha')
-  async getUser(@Req() req) {
-    const userId = req.user.sub
-    return await this.authService.get(userId)
-  }
-
 }

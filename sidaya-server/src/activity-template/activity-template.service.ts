@@ -1,9 +1,24 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ActivityTemplateService {
-  constructor(private db: PrismaService) {}
+  constructor(private db: PrismaService) { }
+
+  async findActivityTemplateByUserId(userId: number) {
+    const user = await this.db.user.findUnique({
+      where: { id: userId },
+    })
+
+    const activityTemplate = await this.db.activity_template.findFirst({
+      where: { id: user.activity_templateId }
+    })
+
+    if (!activityTemplate) throw NotFoundException
+
+    return activityTemplate.id
+
+  }
 
   /**
    * Get All activity_template
