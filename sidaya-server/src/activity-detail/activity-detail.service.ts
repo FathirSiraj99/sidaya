@@ -7,11 +7,11 @@ export class ActivityDetailService {
   constructor(private db: PrismaService) { }
 
   /**
-   * Get All activity_detail
+   * Get All activityDetail
    * @returns
    */
   async findAll() {
-    return await this.db.activity_detail.findMany({
+    return await this.db.activityDetail.findMany({
       include: {
         activityTemplate: {
           select: {
@@ -28,7 +28,7 @@ export class ActivityDetailService {
    * @returns 
    */
   async findAllByTemplate(id: string) {
-    return await this.db.activity_detail.findMany({
+    return await this.db.activityDetail.findMany({
       where: {
         activityTemplateId: id
       }
@@ -36,12 +36,12 @@ export class ActivityDetailService {
   }
 
   /**
-   * Get One activity_detail By id
+   * Get One activityDetail By id
    * @param id
    * @returns
    */
   async findById(id: string) {
-    return await this.db.activity_detail.findUnique({
+    return await this.db.activityDetail.findUnique({
       where: {
         id: id,
       },
@@ -56,23 +56,23 @@ export class ActivityDetailService {
   }
 
   /**
-   * Create activity_detail
+   * Create activityDetail
    * @param data
    * @returns
    */
   async createData(data: ActivityDetailDto) {
-    return await this.db.activity_detail.create({
+    return await this.db.activityDetail.create({
       data: data,
     });
   }
 
   /**
-   * Update activity_detail
+   * Update activityDetail
    * @param id
    * @param data
    */
   async updateData(id: string, data: any) {
-    return await this.db.activity_detail.update({
+    return await this.db.activityDetail.update({
       data: data,
       where: {
         id: id,
@@ -81,11 +81,11 @@ export class ActivityDetailService {
   }
 
   /**
-   * Delete activity_detail
+   * Delete activityDetail
    * @param id
    */
   async deleteData(id: string) {
-    return await this.db.activity_detail.delete({
+    return await this.db.activityDetail.delete({
       where: {
         id: id,
       },

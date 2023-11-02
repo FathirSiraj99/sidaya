@@ -69,21 +69,21 @@ export class AreaService {
     });
   }
 
-  /**
-   * Delete area
-   * @param id
-   */
-  async deleteData(id: string) {
-    await this.db.activity.deleteMany({
-      where: {
-        areaId: id
-      }
-    })
+  // /**
+  //  * Delete area
+  //  * @param id
+  //  */
+  // async deleteData(id: string) {
+  //   await this.db.activity.deleteMany({
+  //     where: {
+  //       areaId: id
+  //     }
+  //   })
 
-    return await this.db.area.delete({
-      where: {
-        id: id,
-      },
-    });
-  }
+  //   return await this.db.area.delete({
+  //     where: {
+  //       id: id,
+  //     },
+  //   });
+  // }
 }

@@ -1,8 +1,7 @@
-import { area } from "@prisma/client";
+import { Area } from "@prisma/client";
 
-export class AreaEntity implements area {
+export class AreaEntity implements Area {
     id: string;
-    activityTemplateId: string;
     capacity: number;
     createdAt: Date;
     feed: number;
@@ -12,4 +11,7 @@ export class AreaEntity implements area {
     volume: number;
     waterLevel: number;
     weight: number;
+    activityTemplateId: string;
+    activityDetailId: string;
+    status: number;
 }

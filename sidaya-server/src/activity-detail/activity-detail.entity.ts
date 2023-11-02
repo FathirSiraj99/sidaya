@@ -1,13 +1,13 @@
-import { Prisma, activity_detail } from "@prisma/client";
+import { ActivityDetail, Prisma } from "@prisma/client";
 
-export class ActivityDetailEntity implements activity_detail {
+export class ActivityDetailEntity implements ActivityDetail {
     id: string;
     name: string;
     time: string;
     nthDay: number;
-    formula: Prisma.JsonValue;
     description: string;
     activityTemplateId: string;
+    formula: Prisma.JsonValue;
     createdAt: Date;
     updatedAt: Date;
 }

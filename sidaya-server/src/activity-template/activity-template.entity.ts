@@ -1,6 +1,6 @@
-import { activity_template } from "@prisma/client";
+import { ActivityTemplate } from "@prisma/client";
 
-export class ActivityTemplateEntity implements activity_template {
+export class ActivityTemplateEntity implements ActivityTemplate {
     id: string;
     name: string;
     createdAt: Date;

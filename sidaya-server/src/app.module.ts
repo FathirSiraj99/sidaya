@@ -8,10 +8,9 @@ import { ActivityDetailModule } from './activity-detail/activity-detail.module';
 import { ActivityModule } from './activity/activity.module';
 import { ProblemsModule } from './problems/problems.module';
 import { AuthModule } from './auth/auth.module';
-import { UserModule } from './user/user.module';
 
 @Module({
-  imports: [PrismaModule, ActivityTemplateModule, AreaModule, ActivityDetailModule, ActivityModule, ProblemsModule, AuthModule, UserModule],
+  imports: [PrismaModule, ActivityTemplateModule, AreaModule, ActivityDetailModule, ActivityModule, ProblemsModule, AuthModule],
   controllers: [AppController],
   providers: [AppService, ],
 })

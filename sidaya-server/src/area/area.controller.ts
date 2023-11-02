@@ -57,13 +57,13 @@ export class AreaController {
     return await this.service.updateData(id, body);
   }
 
-  /**
-   * Delete activity_template
-   * @param id
-   * @returns
-   */
-  @Delete('/:id')
-  async delete(@Param('id') id: string) {
-    return await this.service.deleteData(id);
-  }
+  // /**
+  //  * Delete activity_template
+  //  * @param id
+  //  * @returns
+  //  */
+  // @Delete('/:id')
+  // async delete(@Param('id') id: string) {
+  //   return await this.service.deleteData(id);
+  // }
 }

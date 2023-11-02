@@ -1,11 +1,12 @@
-import { user } from "@prisma/client";
+import { User } from "@prisma/client";
 
 
-export class Auth implements user {
+export class Auth implements User {
     id: number
     username: string
     password: string
-    activity_templateId: string;
     createdAt: Date;
     updatedAt: Date;
+    activity_templateId: string;
+    areaId: string;
 }

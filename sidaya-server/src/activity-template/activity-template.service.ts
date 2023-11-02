@@ -5,36 +5,21 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ActivityTemplateService {
   constructor(private db: PrismaService) { }
 
-  async findActivityTemplateByUserId(userId: number) {
-    const user = await this.db.user.findUnique({
-      where: { id: userId },
-    })
-
-    const activityTemplate = await this.db.activity_template.findFirst({
-      where: { id: user.activity_templateId }
-    })
-
-    if (!activityTemplate) throw NotFoundException
-
-    return activityTemplate.id
-
-  }
-
   /**
-   * Get All activity_template
+   * Get All activityTemplate
    * @returns
    */
   async findAll() {
-    return await this.db.activity_template.findMany();
+    return await this.db.activityTemplate.findMany();
   }
 
   /**
-   * Get One activity_template By id
+   * Get One activityTemplate By id
    * @param id
    * @returns
    */
   async findById(id: string) {
-    return await this.db.activity_template.findUnique({
+    return await this.db.activityTemplate.findUnique({
       where: {
         id: id,
       },
@@ -42,23 +27,23 @@ export class ActivityTemplateService {
   }
 
   /**
-   * Create activity_template
+   * Create activityTemplate
    * @param data
    * @returns
    */
   async createData(data: any) {
-    return await this.db.activity_template.create({
+    return await this.db.activityTemplate.create({
       data: data,
     });
   }
 
   /**
-   * Update activity_template
+   * Update activityTemplate
    * @param id
    * @param data
    */
   async updateData(id: string, data: any) {
-    return await this.db.activity_template.update({
+    return await this.db.activityTemplate.update({
       data: data,
       where: {
         id: id,
@@ -67,11 +52,11 @@ export class ActivityTemplateService {
   }
 
   /**
-   * Delete activity_template
+   * Delete activityTemplate
    * @param id
    */
   async deleteData(id: string) {
-    return await this.db.activity_template.delete({
+    return await this.db.activityTemplate.delete({
       where: {
         id: id,
       },
