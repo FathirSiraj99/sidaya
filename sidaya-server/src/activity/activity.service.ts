@@ -6,79 +6,37 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ActivityService {
   constructor(private readonly db: PrismaService,) { }
 
-  async startActivity(userId: number) {
+  async startActivity(areaId: string) {
     const area = await this.db.area.findFirst({
-      where: { userId }
+      where: { id: areaId }
     })
 
     const activityTemplate = await this.db.activityTemplate.findFirst({
       where: { id: area.activityTemplateId }
     })
 
-    return await this.db.activityDetail.findMany({
+    const newActivity = await this.db.activityDetail.findMany({
       where: { activityTemplateId: activityTemplate.id },
       orderBy: {
-        nthDay: 'asc'
+        turn: 'asc'
       },
       take: 3,
     })
+
+    return {
+      area, newActivity
+    }
   }
 
-  // async nextActivity(userId: number, activityDetailId: string) {
-  //   const area = await this.db.area.findFirst({
-  //     where: { userId }
-  //   })
-
-  //   if (!area) throw new NotFoundException("Area not found")
-
-  //   const updatedArea = await this.db.area.update({
-  //     where: { id: area.id },
-  //     data: {
-  //       activityDetailId
-  //     }
-  //   })
-
-  //   const activityTemplateId = updatedArea.activityTemplateId;
-
-  //   // // Menentukan nthDay terendah berdasarkan activityTemplateId
-  //   // const minNthDay = await this.db.activityDetail.findFirst({
-  //   //   where: { activityTemplateId },
-  //   //   orderBy: {
-  //   //     nthDay: 'asc'
-  //   //   },
-  //   //   select: {
-  //   //     nthDay: true
-  //   //   }
-  //   // });
-
-  //   // if (!minNthDay) {
-
-  //   //   return [];
-  //   // }
-
-  //   const newActivity = await this.db.activityDetail.findMany({
-  //     where: {
-  //       activityTemplateId,
-  //       NOT: {
-  //         id: updatedArea.activityDetailId
-  //       }
-  //     },
-  //     orderBy: {
-  //       nthDay: 'asc'
-  //     },
-  //     take: 3
-  //   });
-
-  //   return newActivity;
-  // }
-
-  async nextActivity(userId: number, activityDetailId: string) {
+  async nextActivity(areaId: string, activityDetailId: string) {
+    // Ambil area berdasarkan areaId
     const area = await this.db.area.findFirst({
-      where: { userId }
+      where: { id: areaId }
     });
 
     if (!area) throw new NotFoundException("Area not found");
 
+    // Update activityDetailId pada area
     const updatedArea = await this.db.area.update({
       where: { id: area.id },
       data: {
@@ -86,20 +44,19 @@ export class ActivityService {
       }
     });
 
-    const activityTemplateId = updatedArea.activityTemplateId;
-    const previousActivityDetailId = area.activityDetailId; // ID sebelumnya
+    // Ambil activityDetail berdasarkan activityDetailId yang baru diupdate
+    const turn = await this.db.activityDetail.findFirst({
+      where: { id: updatedArea.activityDetailId }
+    });
 
-    const excludedIds = [activityDetailId, previousActivityDetailId]; // Menyimpan ID yang akan dikecualikan
+    console.log(turn);
 
-    console.log(excludedIds)
-
+    // Ambil aktivitas yang memiliki turn lebih besar dari atau sama dengan turn dari activityDetail
     const newActivity = await this.db.activityDetail.findMany({
       where: {
-        activityTemplateId,
-        id: {
-          not: {
-            in: excludedIds
-          }
+        activityTemplateId: updatedArea.activityTemplateId,
+        turn: {
+          gte: turn.turn + 1
         }
       },
       select: {
@@ -107,13 +64,13 @@ export class ActivityService {
         name: true
       },
       orderBy: {
-        nthDay: 'asc'
-      },
-      take: 3
+        turn: 'asc'
+      }
     });
 
     return newActivity;
   }
+
 
 
 

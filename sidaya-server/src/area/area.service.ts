@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { ActivityService } from 'src/activity/activity.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { AreaDto } from './area.dto';
@@ -20,19 +20,56 @@ export class AreaService {
     });
   }
 
-  async findById(id: string) {
-    return await this.db.area.findUnique({
-      where: {
-        id: id,
-      },
+  async findById(areaId: string) {
+    const area = await this.db.area.findFirst({
+      where: { id: areaId },
       include: {
         activityTemplate: {
-          select: {
-            name: true,
-          },
-        },
-      },
+          select: { name: true }
+        }
+      }
     });
+
+    if (!area) throw new NotFoundException("Area not found");
+
+    if (area.activityDetailId === null) {
+      const activity = await this.db.activityDetail.findMany({
+        where: {
+          activityTemplateId: area.activityTemplateId,
+        },
+        select: {
+          id: true,
+          name: true
+        },
+        orderBy: {
+          turn: 'asc'
+        },
+        take: 3
+      });
+
+      return { area, activity }
+    }
+
+    const activity = await this.db.activityDetail.findMany({
+      where: {
+        activityTemplateId: area.activityTemplateId,
+        id: {
+          not: {
+            lte: area.activityDetailId + 1
+          }
+        }
+      },
+      select: {
+        id: true,
+        name: true
+      },
+      orderBy: {
+        turn: 'asc'
+      },
+      take: 3
+    });
+
+    return { area, activity };
   }
 
   async createData(userId: number, dto: AreaDto) {
@@ -43,7 +80,7 @@ export class AreaService {
       }
     });
 
-    return await this.activityService.startActivity(userId)
+    return await this.activityService.startActivity(newArea.id)
   }
 
   /**

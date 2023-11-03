@@ -29,6 +29,7 @@ model ActivityDetail {
   description        String?
   nthDay             Int      @default(0) @map(name: "nth_day")
   time               String
+  turn               String
   formula            Json?
   activityTemplateId String   @map(name: "activity_template")
   createdAt          DateTime @default(now()) @map(name: "created_at")

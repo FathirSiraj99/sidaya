@@ -9,4 +9,5 @@ export class ActivityDetailDto extends OmitType(ActivityDetailEntity, ['id', 'cr
     // formula: Prisma.JsonValue;
     nthDay: number;
     time: string;
+    turn: string;
 }
