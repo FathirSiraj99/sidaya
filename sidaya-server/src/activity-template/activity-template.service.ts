@@ -19,12 +19,19 @@ export class ActivityTemplateService {
    * @returns
    */
   async findById(id: string) {
-    return await this.db.activityTemplate.findUnique({
-      where: {
-        id: id,
-      },
+    const template = await this.db.activityTemplate.findUnique({
+      where: { id: id },
+      include: { activityDetail: true }
     });
+  
+    if (template) {
+    const displayedActivityDetails = template.activityDetail.slice(0, 3);
+      return { ...template, activityDetail: displayedActivityDetails };
+    }
+  
+    return console.log({msg:"tidak dapat menemukan aktivitas"});
   }
+  
 
   /**
    * Create activityTemplate

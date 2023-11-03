@@ -26,7 +26,7 @@ model ActivityTemplate {
 model ActivityDetail {
   id                 String   @id @default(uuid())
   name               String
-  description        String
+  description        String?
   nthDay             Int      @default(0) @map(name: "nth_day")
   time               String
   formula            Json?

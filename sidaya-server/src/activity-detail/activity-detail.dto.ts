@@ -5,8 +5,8 @@ import { Prisma } from "@prisma/client";
 export class ActivityDetailDto extends OmitType(ActivityDetailEntity, ['id', 'createdAt', 'updatedAt']) {
     name: string;
     activityTemplateId: string;
-    description: string;
-    formula: Prisma.JsonValue;
+    // description: string;
+    // formula: Prisma.JsonValue;
     nthDay: number;
     time: string;
 }
