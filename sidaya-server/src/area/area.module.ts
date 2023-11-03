@@ -6,6 +6,6 @@ import { ActivityService } from 'src/activity/activity.service';
 
 @Module({
   controllers: [AreaController],
-  providers: [AreaService, PrismaService]
+  providers: [AreaService, ActivityService, PrismaService]
 })
 export class AreaModule { }

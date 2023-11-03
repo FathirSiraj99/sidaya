@@ -6,55 +6,48 @@ import {
   Param,
   Patch,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { AreaService } from './area.service';
+import { AreaDto } from './area.dto';
+import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('area')
 export class AreaController {
-  constructor(private service: AreaService) {}
+  constructor(private Areaservice: AreaService) { }
 
-  /**
-   * Get activity_template
-   * @returns
-   */
+
   @Get()
   async getAll() {
-    return await this.service.findAll();
+    return await this.Areaservice.findAll();
   }
 
-  /**
-   * Get One activity_template By Id
-   * @param id
-   * @returns
-   */
+  @Get('find')
+  async getAllByUserId(@Req() req) {
+    const userId = req.user.sub
+    return await this.Areaservice.findAllByUserId(userId)
+  }
+
   @Get('/:id')
   async getById(@Param('id') id: string) {
-    return await this.service.findById(id);
+    return await this.Areaservice.findById(id);
   }
 
-  /**
-   * Create activity_template
-   * @param body
-   * @returns
-   */
+  @UseGuards(AuthGuard)
   @Post()
-  async create(@Body() body: any) {
-    const diameter = body.volume;
+  async create(@Req() req, @Body() dto: AreaDto) {
+    const userId = req.user.sub
+    const diameter = dto.volume;
     const volume = 3.14159 * diameter * diameter;
-    body.volume = volume;
+    dto.volume = volume;
 
-    return await this.service.createData(body);
+    return await this.Areaservice.createData(userId, dto);
   }
 
-  /**
-   * Update activity_template
-   * @param id
-   * @param body
-   * @returns
-   */
   @Patch('/:id')
   async update(@Param('id') id: string, @Body() body: any) {
-    return await this.service.updateData(id, body);
+    return await this.Areaservice.updateData(id, body);
   }
 
   // /**
@@ -64,6 +57,6 @@ export class AreaController {
   //  */
   // @Delete('/:id')
   // async delete(@Param('id') id: string) {
-  //   return await this.service.deleteData(id);
+  //   return await this.Areaservice.deleteData(id);
   // }
 }

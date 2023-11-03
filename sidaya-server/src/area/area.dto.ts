@@ -1,13 +1,13 @@
 import { OmitType } from "@nestjs/mapped-types";
 import { AreaEntity } from "./area.entity";
 
-export class AreaDto extends OmitType(AreaEntity, ['id', 'updatedAt']) {
-    name: string;
+export class AreaDto extends OmitType(AreaEntity, ['id']) {
     activityTemplateId: string;
     capacity: number;
-    createdAt: Date;
     feed: number;
+    id: string;
     isActive: number;
+    name: string;
     volume: number;
     waterLevel: number;
     weight: number;

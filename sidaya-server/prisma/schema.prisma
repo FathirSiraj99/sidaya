@@ -56,9 +56,10 @@ model Area {
   activityTemplateId String?  @map(name: "activity_template_id")
   activityDetailId   String?  @map(name: "activity_detail_id")
 
-  user             User[]
   activityTemplate ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
   ActivityDetail   ActivityDetail?   @relation(fields: [activityDetailId], references: [id])
+  User             User?             @relation(fields: [userId], references: [id])
+  userId           Int?
 
   @@map(name: "area")
 }
@@ -82,8 +83,7 @@ model User {
   password  String
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
-  Area      Area?    @relation(fields: [areaId], references: [id])
-  areaId    String?  @map(name: "area_id")
+  area      Area[]
 
   @@map(name: "user")
 }

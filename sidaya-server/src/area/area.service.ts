@@ -1,34 +1,25 @@
 import { Injectable } from '@nestjs/common';
+import { ActivityService } from 'src/activity/activity.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { AreaDto } from './area.dto';
 
 @Injectable()
 export class AreaService {
-  constructor(private db: PrismaService) {}
+  constructor(
+    private db: PrismaService,
+    private activityService: ActivityService
+  ) { }
 
-  /**
-   * Get All area
-   * @returns
-   */
   async findAll() {
+    return await this.db.area.findMany()
+  }
+
+  async findAllByUserId(userId: number) {
     return await this.db.area.findMany({
-      include: {
-        activityTemplate: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'asc'
-      }
+      where: { userId }
     });
   }
 
-  /**
-   * Get One area By id
-   * @param id
-   * @returns
-   */
   async findById(id: string) {
     return await this.db.area.findUnique({
       where: {
@@ -37,22 +28,22 @@ export class AreaService {
       include: {
         activityTemplate: {
           select: {
-            name: true, // Hanya menyertakan field "name" dari activityTemplate
+            name: true,
           },
         },
       },
     });
   }
 
-  /**
-   * Create area
-   * @param data
-   * @returns
-   */
-  async createData(data: any) {
-    return await this.db.area.create({
-      data: data,
+  async createData(userId: number, dto: AreaDto) {
+    const newArea = await this.db.area.create({
+      data: {
+        ...dto,
+        userId
+      }
     });
+
+    return await this.activityService.startActivity(userId)
   }
 
   /**
