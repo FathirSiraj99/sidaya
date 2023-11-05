@@ -57,6 +57,22 @@ CREATE TABLE "problem" (
 );
 
 -- CreateTable
+CREATE TABLE "ProblemDetail" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT,
+    "nth_day" INTEGER NOT NULL DEFAULT 0,
+    "time" TEXT NOT NULL,
+    "turn" TEXT NOT NULL,
+    "formula" JSONB,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL,
+    "problem_id" TEXT NOT NULL,
+
+    CONSTRAINT "ProblemDetail_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "user" (
     "id" SERIAL NOT NULL,
     "username" TEXT NOT NULL,
@@ -84,3 +100,6 @@ ALTER TABLE "area" ADD CONSTRAINT "area_userId_fkey" FOREIGN KEY ("userId") REFE
 
 -- AddForeignKey
 ALTER TABLE "problem" ADD CONSTRAINT "problem_activity_template_id_fkey" FOREIGN KEY ("activity_template_id") REFERENCES "acitivity_template"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ProblemDetail" ADD CONSTRAINT "ProblemDetail_problem_id_fkey" FOREIGN KEY ("problem_id") REFERENCES "problem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

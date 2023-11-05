@@ -75,7 +75,23 @@ model Problem {
 
   activity_template ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
 
+  problemDetail ProblemDetail[]
+
   @@map(name: "problem")
+}
+
+model ProblemDetail {
+  id          String   @id @default(uuid())
+  name        String
+  nthDay      Int      @default(0) @map(name: "nth_day")
+  time        String
+  turn        String
+  formula     Json?
+  createdAt   DateTime @default(now()) @map(name: "created_at")
+  updatedAt   DateTime @updatedAt @map(name: "updated_at")
+  problemId   String   @map(name: "problem_id")
+
+  problem Problem? @relation(fields: [problemId], references: [id])
 }
 
 model User {
