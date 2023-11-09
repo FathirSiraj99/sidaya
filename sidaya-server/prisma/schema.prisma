@@ -101,7 +101,13 @@ model User {
   password  String
   createdAt DateTime @default(now()) @map(name: "created_at")
   updatedAt DateTime @updatedAt @map(name: "updated_at")
+  roles     Role     @default(USER)
   area      Area[]
 
   @@map(name: "user")
+}
+
+enum Role {
+  USER
+  ADMIN
 }

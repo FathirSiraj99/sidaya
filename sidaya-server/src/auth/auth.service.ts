@@ -1,6 +1,5 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
 import * as bcrypt from 'bcrypt'
 import { JwtService } from '@nestjs/jwt';
 
@@ -11,20 +10,20 @@ export class AuthService {
         private readonly jwt: JwtService
     ) { }
 
-    async register(dto: CreateAuthDto) {
+    async register(data: any) {
         const existingUser = await this.prisma.user.findUnique({
-            where: { username: dto.username }
+            where: { username: data.username }
         })
 
         if (existingUser) {
             throw new UnauthorizedException('username already in use')
         }
 
-        const hashedPassword = await bcrypt.hash(dto.password, 10)
+        const hashedPassword = await bcrypt.hash(data.password, 10)
 
         const user = await this.prisma.user.create({
             data: {
-                ...dto,
+                ...data,
                 password: hashedPassword
             }
         })
@@ -39,22 +38,22 @@ export class AuthService {
 
     }
 
-    async login(dto: CreateAuthDto) {
+    async login(data: any) {
         const user = await this.prisma.user.findUnique({
-            where: { username: dto.username }
+            where: { username: data.username }
         })
 
         if (!user) {
             throw new UnauthorizedException('email not found')
         }
 
-        const password = await bcrypt.compare(dto.password, user.password)
+        const password = await bcrypt.compare(data.password, user.password)
 
         if (!password) {
             throw new UnauthorizedException('password wrong')
         }
 
-        const payload = { sub: user.id, username: user.username }
+        const payload = { sub: user.id, username: user.username, role: user.roles }
 
         return {
             access_token: await this.jwt.signAsync(payload)
