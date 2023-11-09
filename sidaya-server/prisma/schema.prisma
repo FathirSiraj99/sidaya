@@ -11,87 +11,88 @@ datasource db {
 }
 
 model ActivityTemplate {
-  id        String   @id @default(uuid())
-  name      String
-  createdAt DateTime @default(now()) @map(name: "created_at")
-  updatedAt DateTime @updatedAt @map(name: "updated_at")
-
+  id             String           @id @default(uuid())
+  name           String
+  createdAt      DateTime         @default(now()) @map(name: "created_at")
+  updatedAt      DateTime         @updatedAt @map(name: "updated_at")
   area           Area[]
-  activityDetail ActivityDetail[]
   problem        Problem[]
+  activityDetail ActivityDetail[]
 
-  @@map(name: "acitivity_template")
+  @@map(name: "activity_template")
 }
 
 model ActivityDetail {
-  id                 String   @id @default(uuid())
+  id                 String            @id @default(uuid())
   name               String
   description        String?
-  nthDay             Int      @default(0) @map(name: "nth_day")
+  nthDay             Int               @default(0) @map(name: "nth_day")
   time               String
   turn               String
   formula            Json?
-  activityTemplateId String   @map(name: "activity_template")
-  createdAt          DateTime @default(now()) @map(name: "created_at")
-  updatedAt          DateTime @updatedAt @map(name: "updated_at")
-
-  area Area[]
-
-  activityTemplate ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
+  activityTemplateId String            @map(name: "activity_template")
+  createdAt          DateTime          @default(now()) @map(name: "created_at")
+  updatedAt          DateTime          @updatedAt @map(name: "updated_at")
+  area               Area[]
+  activityTemplate   ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
 
   @@map(name: "activity_detail")
 }
 
 model Area {
-  id                 String   @id @default(uuid())
+  id                 String            @id @default(uuid())
   name               String
-  capacity           Int      @default(0)
-  feed               Float?   @default(0)
-  volume             Float    @default(0)
-  weight             Float?   @default(0)
-  waterLevel         Int?     @default(0) @map(name: "water_level")
-  isActive           Int      @default(0)
+  capacity           Int               @default(0)
+  feed               Float?            @default(0)
+  volume             Float             @default(0)
+  weight             Float?            @default(0)
+  waterLevel         Int?              @default(0) @map(name: "water_level")
+  isActive           Int               @default(0) @map(name: "is_active")
   status             Int?
-  createdAt          DateTime @default(now()) @map(name: "created_at")
-  updatedAt          DateTime @updatedAt @map(name: "updated_at")
-  activityTemplateId String?  @map(name: "activity_template_id")
-  activityDetailId   String?  @map(name: "activity_detail_id")
-
-  activityTemplate ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
-  ActivityDetail   ActivityDetail?   @relation(fields: [activityDetailId], references: [id])
-  User             User?             @relation(fields: [userId], references: [id])
-  userId           Int?
+  createdAt          DateTime          @default(now()) @map(name: "created_at")
+  updatedAt          DateTime          @updatedAt @map(name: "updated_at")
+  activityTemplateId String?           @map(name: "activity_template_id")
+  activityDetailId   String?           @map(name: "activity_detail_id")
+  userId             Int?              @map(name: "user_id")
+  problemId          String?           @map(name: "problem_id")
+  problemDetailId    String?           @map(name: "problem_detail_id")
+  activityTemplate   ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
+  ActivityDetail     ActivityDetail?   @relation(fields: [activityDetailId], references: [id])
+  User               User?             @relation(fields: [userId], references: [id])
+  Problem            Problem?          @relation(fields: [problemId], references: [id])
+  ProblemDetail      ProblemDetail?    @relation(fields: [problemDetailId], references: [id])
 
   @@map(name: "area")
 }
 
 model Problem {
-  id                 String   @id @default(uuid())
+  id                 String            @id @default(uuid())
   name               String
   description        String
-  activityTemplateId String?  @map(name: "activity_template_id")
-  createdAt          DateTime @default(now()) @map(name: "created_at")
-  updatedAt          DateTime @updatedAt @map(name: "updated_at")
-
-  activity_template ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
-
-  problemDetail ProblemDetail[]
+  activityTemplateId String?           @map(name: "activity_template_id")
+  createdAt          DateTime          @default(now()) @map(name: "created_at")
+  updatedAt          DateTime          @updatedAt @map(name: "updated_at")
+  area               Area[]
+  ProblemDetail      ProblemDetail[]
+  activity_template  ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
 
   @@map(name: "problem")
 }
 
 model ProblemDetail {
-  id          String   @id @default(uuid())
-  name        String
-  nthDay      Int      @default(0) @map(name: "nth_day")
-  time        String
-  turn        String
-  formula     Json?
-  createdAt   DateTime @default(now()) @map(name: "created_at")
-  updatedAt   DateTime @updatedAt @map(name: "updated_at")
-  problemId   String   @map(name: "problem_id")
+  id        String   @id @default(uuid())
+  name      String
+  nthDay    Int      @default(0) @map(name: "nth_day")
+  time      String
+  turn      String
+  formula   Json?
+  problemId String   @map(name: "problem_id")
+  createdAt DateTime @default(now()) @map(name: "created_at")
+  updatedAt DateTime @updatedAt @map(name: "updated_at")
+  area      Area[]
+  problem   Problem? @relation(fields: [problemId], references: [id])
 
-  problem Problem? @relation(fields: [problemId], references: [id])
+  @@map(name: "problem_detail")
 }
 
 model User {

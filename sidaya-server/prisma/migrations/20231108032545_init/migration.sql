@@ -60,14 +60,13 @@ CREATE TABLE "problem" (
 CREATE TABLE "ProblemDetail" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "description" TEXT,
     "nth_day" INTEGER NOT NULL DEFAULT 0,
     "time" TEXT NOT NULL,
     "turn" TEXT NOT NULL,
     "formula" JSONB,
+    "problemId" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
-    "problem_id" TEXT NOT NULL,
 
     CONSTRAINT "ProblemDetail_pkey" PRIMARY KEY ("id")
 );
@@ -102,4 +101,4 @@ ALTER TABLE "area" ADD CONSTRAINT "area_userId_fkey" FOREIGN KEY ("userId") REFE
 ALTER TABLE "problem" ADD CONSTRAINT "problem_activity_template_id_fkey" FOREIGN KEY ("activity_template_id") REFERENCES "acitivity_template"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ProblemDetail" ADD CONSTRAINT "ProblemDetail_problem_id_fkey" FOREIGN KEY ("problem_id") REFERENCES "problem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "ProblemDetail" ADD CONSTRAINT "ProblemDetail_problemId_fkey" FOREIGN KEY ("problemId") REFERENCES "problem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

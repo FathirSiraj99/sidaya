@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ActivityService } from 'src/activity/activity.service';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { AreaDto } from './area.dto';
 
 @Injectable()
 export class AreaService {
@@ -32,50 +31,23 @@ export class AreaService {
 
     if (!area) throw new NotFoundException("Area not found");
 
-    if (area.activityDetailId === null) {
-      const activity = await this.db.activityDetail.findMany({
-        where: {
-          activityTemplateId: area.activityTemplateId,
-        },
-        select: {
-          id: true,
-          name: true
-        },
-        orderBy: {
-          turn: 'asc'
-        },
-        take: 3
-      });
+    if (area.activityTemplateId === null) return { area, activity: "Selamat kamu telah selesai" }
 
-      return { area, activity }
+    if (area.problemId !== null) {
+      return await this.activityService.findAllProblemByAreaId(areaId)
     }
 
-    const activity = await this.db.activityDetail.findMany({
-      where: {
-        activityTemplateId: area.activityTemplateId,
-        id: {
-          not: {
-            lte: area.activityDetailId + 1
-          }
-        }
-      },
-      select: {
-        id: true,
-        name: true
-      },
-      orderBy: {
-        turn: 'asc'
-      },
-      take: 3
-    });
+    if (area.activityDetailId === null) {
+      return await this.activityService.startActivity(areaId)
+    }
 
-    return { area, activity };
+    return await this.activityService.findAllActivityByAreaId(areaId)
   }
 
-  async createData(userId: number, dto: AreaDto) {
+  async createData(userId: number, data: any) {
     const newArea = await this.db.area.create({
       data: {
-        ...dto,
+        ...data,
         userId
       }
     });

@@ -6,14 +6,13 @@ import { ActivityTemplateModule } from './activity-template/activity-template.mo
 import { AreaModule } from './area/area.module';
 import { ActivityDetailModule } from './activity-detail/activity-detail.module';
 import { ActivityModule } from './activity/activity.module';
-import { ProblemsModule } from './problems/problems.module';
 import { AuthModule } from './auth/auth.module';
 import { ProblemDetailModule } from './problem-detail/problem-detail.module';
 import { ProblemModule } from './problem/problem.module';
 
 @Module({
-  imports: [PrismaModule, ActivityTemplateModule, AreaModule, ActivityDetailModule, ActivityModule, ProblemsModule, AuthModule, ProblemDetailModule, ProblemModule],
+  imports: [PrismaModule, ActivityTemplateModule, AreaModule, ActivityDetailModule, ActivityModule, AuthModule, ProblemDetailModule, ProblemModule],
   controllers: [AppController],
-  providers: [AppService, ],
+  providers: [AppService,],
 })
-export class AppModule {}
+export class AppModule { }

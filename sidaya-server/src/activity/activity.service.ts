@@ -6,6 +6,70 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ActivityService {
   constructor(private readonly db: PrismaService,) { }
 
+  async findAllActivityByAreaId(areaId: string) {
+    const area = await this.db.area.findUnique({
+      where: { id: areaId }
+    })
+
+    const turn = await this.db.activityDetail.findFirst({
+      where: { id: area.activityDetailId }
+    });
+
+    const newActivity = await this.db.activityDetail.findMany({
+      where: {
+        activityTemplateId: area.activityTemplateId,
+        turn: {
+          gte: turn.turn + 1
+        }
+      },
+      select: {
+        id: true,
+        name: true
+      },
+      orderBy: {
+        turn: 'asc'
+      }
+    });
+
+    if (newActivity.length === 0) {
+      return { area, activity: "Selamat kamu telah selesai" }
+    }
+
+    return { area, activity: newActivity };
+  }
+
+  async findAllProblemByAreaId(areaId: string) {
+    const area = await this.db.area.findUnique({
+      where: { id: areaId }
+    })
+
+    const turn = await this.db.problemDetail.findFirst({
+      where: { problemId: area.problemId }
+    });
+
+    const newProblem = await this.db.problemDetail.findMany({
+      where: {
+        problemId: area.problemId,
+        turn: {
+          gte: turn.turn
+        }
+      },
+      select: {
+        id: true,
+        name: true
+      },
+      orderBy: {
+        turn: 'asc'
+      }
+    });
+
+    if (newProblem.length === 0) {
+      return { area, activity: "Selamat kamu telah selesai" }
+    }
+
+    return { area, problem: newProblem };
+  }
+
   async startActivity(areaId: string) {
     const area = await this.db.area.findFirst({
       where: { id: areaId }
@@ -23,35 +87,69 @@ export class ActivityService {
       take: 3,
     })
 
-    return {
-      area, newActivity
-    }
+    return { area, activity: newActivity }
   }
 
-  async nextActivity(areaId: string, activityDetailId: string) {
-    // Ambil area berdasarkan areaId
+  async nextActivity(areaId: string, activityId: string) {
     const area = await this.db.area.findFirst({
       where: { id: areaId }
     });
 
     if (!area) throw new NotFoundException("Area not found");
 
-    // Update activityDetailId pada area
+    if (area.problemId !== null) {
+      const updatedArea = await this.db.area.update({
+        where: { id: area.id },
+        data: {
+          problemDetailId: activityId
+        }
+      });
+
+      const turn = await this.db.problemDetail.findFirst({
+        where: { id: updatedArea.problemDetailId }
+      });
+
+      const newProblem = await this.db.problemDetail.findMany({
+        where: {
+          problemId: updatedArea.problemId,
+          turn: {
+            gte: turn.turn + 1
+          }
+        },
+        select: {
+          id: true,
+          name: true
+        },
+        orderBy: {
+          turn: 'asc'
+        }
+      });
+
+      if (newProblem.length === 0) {
+        await this.db.area.update({
+          where: { id: area.id },
+          data: {
+            problemId: null
+          }
+        })
+
+        return { area, activity: "Selamat kamu telah selesai" }
+      }
+
+      return { area, problem: newProblem };
+    }
+
     const updatedArea = await this.db.area.update({
       where: { id: area.id },
       data: {
-        activityDetailId
+        activityDetailId: activityId
       }
     });
 
-    // Ambil activityDetail berdasarkan activityDetailId yang baru diupdate
     const turn = await this.db.activityDetail.findFirst({
       where: { id: updatedArea.activityDetailId }
     });
 
-    console.log(turn);
-
-    // Ambil aktivitas yang memiliki turn lebih besar dari atau sama dengan turn dari activityDetail
     const newActivity = await this.db.activityDetail.findMany({
       where: {
         activityTemplateId: updatedArea.activityTemplateId,
@@ -68,14 +166,50 @@ export class ActivityService {
       }
     });
 
-    return newActivity;
+    if (newActivity.length === 0) {
+      await this.db.area.update({
+        where: { id: areaId },
+        data: {
+          activityTemplateId: null,
+          activityDetailId: null
+        }
+      })
+      return { area, activity: "Selamat kamu telah selesai" }
+    }
+
+    return { area, activity: newActivity };
   }
 
+  async includeProblem(areaId: string, problemId: string) {
+    const area = await this.db.area.findFirst({
+      where: { id: areaId }
+    });
 
+    if (!area) throw new NotFoundException("Area not found");
 
+    const updatedArea = await this.db.area.update({
+      where: { id: areaId },
+      data: {
+        problemId: problemId
+      }
+    })
 
+    const newProblem = await this.db.problemDetail.findMany({
+      where: {
+        problemId: updatedArea.problemId,
+      },
+      select: {
+        id: true,
+        name: true
+      },
+      orderBy: {
+        turn: 'asc'
+      },
+      take: 3
+    });
 
-
+    return { area, problem: newProblem }
+  }
 
   async formula(formula: Prisma.JsonValue, id: string): Promise<string> {
     if (!formula || formula === null) return null;

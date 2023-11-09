@@ -34,9 +34,7 @@ export class AuthService {
         return {
             Response: 201,
             message: "User successfully created",
-            data: {
-                user: rest
-            }
+            user: rest
         }
 
     }

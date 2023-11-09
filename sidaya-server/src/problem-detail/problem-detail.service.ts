@@ -1,31 +1,42 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProblemDetailDto } from './dto/create-problem-detail.dto';
-import { UpdateProblemDetailDto } from './dto/update-problem-detail.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ProblemDetailService {
-  constructor (private db: PrismaService){}
+  constructor(private db: PrismaService) { }
 
-  async createData (data : CreateProblemDetailDto){
+  async createData(data: any) {
     return this.db.problemDetail.create({
-      data : data
+      data: data
     })
   }
 
-  findAll() {
-    return `This action returns all problemDetail`;
+  async findAllByProblem(problemId: string) {
+    return await this.db.problemDetail.findMany({
+      where: { problemId }
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} problemDetail`;
+  async findAll() {
+    return await this.db.problemDetail.findMany();
   }
 
-  update(id: number, updateProblemDetailDto: UpdateProblemDetailDto) {
-    return `This action updates a #${id} problemDetail`;
+  async findOne(id: string) {
+    return await this.db.problemDetail.findFirst({
+      where: { id }
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} problemDetail`;
+  async update(id: string, data: any) {
+    return await this.db.problemDetail.update({
+      where: { id },
+      data: data
+    });
+  }
+
+  async delete(id: string) {
+    return this.db.problemDetail.delete({
+      where: { id }
+    });
   }
 }

@@ -1,31 +1,46 @@
 import { Injectable } from '@nestjs/common';
-import { CreateProblemDto } from './dto/create-problem.dto';
-import { UpdateProblemDto } from './dto/update-problem.dto';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ProblemService {
-  constructor (private db : PrismaService){}
+  constructor(private db: PrismaService) { }
 
-  async createData ( data:any) {
-      return await this.db.problem.create({
-        data: data
-      })
+  async createData(data: any) {
+    return await this.db.problem.create({
+      data: data
+    })
   }
 
-  findAll() {
-    return `This action returns all problem`;
+  async findAllByActivityTemplate(activityTemplateId: string) {
+    return await this.db.problem.findMany({
+      where: { activityTemplateId }
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} problem`;
+  async findAll() {
+    return await this.db.problem.findMany();
   }
 
-  update(id: number, updateProblemDto: UpdateProblemDto) {
-    return `This action updates a #${id} problem`;
+  async findOne(id: string) {
+    return await this.db.problem.findUnique({
+      where: { id }
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} problem`;
+  async update(id: string, data: any) {
+    return await this.db.problem.update({
+      where: { id },
+      data: data
+    });
+  }
+
+  async remove(id: string) {
+    const deleteProblemDetail = await this.db.problemDetail.deleteMany({
+      where: { problemId: id }
+    })
+
+    return await this.db.problem.delete({
+      where: { id }
+    });
   }
 }

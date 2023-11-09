@@ -1,34 +1,37 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ProblemDetailService } from './problem-detail.service';
-import { CreateProblemDetailDto } from './dto/create-problem-detail.dto';
-import { UpdateProblemDetailDto } from './dto/update-problem-detail.dto';
 
 @Controller('problem-detail')
 export class ProblemDetailController {
-  constructor(private readonly problemDetailService: ProblemDetailService) {}
+  constructor(private readonly problemDetailService: ProblemDetailService) { }
 
   @Post()
-  create(@Body() createProblemDetailDto: CreateProblemDetailDto) {
-    return this.problemDetailService.create(createProblemDetailDto);
+  async create(@Body() data: any) {
+    return this.problemDetailService.createData(data);
   }
 
-  @Get()
-  findAll() {
+  @Get(':problemId')
+  async findAll(@Param('problemId') problemId: string) {
+    return this.problemDetailService.findAll();
+  }
+
+  @Get('find/:problemId')
+  async findAllByProblem(@Param('problemId') problemId: string) {
     return this.problemDetailService.findAll();
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.problemDetailService.findOne(+id);
+  async findOne(@Param('id') id: string) {
+    return this.problemDetailService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProblemDetailDto: UpdateProblemDetailDto) {
-    return this.problemDetailService.update(+id, updateProblemDetailDto);
+  async update(@Param('id') id: string, @Body() data: any) {
+    return this.problemDetailService.update(id, data);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.problemDetailService.remove(+id);
+  async remove(@Param('id') id: string) {
+    return this.problemDetailService.delete(id);
   }
 }

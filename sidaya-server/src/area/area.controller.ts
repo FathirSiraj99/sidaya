@@ -10,7 +10,6 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AreaService } from './area.service';
-import { AreaDto } from './area.dto';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 
 @Controller('area')
@@ -36,13 +35,13 @@ export class AreaController {
 
   @UseGuards(AuthGuard)
   @Post()
-  async create(@Req() req, @Body() dto: AreaDto) {
+  async create(@Req() req, @Body() data: any) {
     const userId = req.user.sub
-    const diameter = dto.volume;
+    const diameter = data.volume;
     const volume = 3.14159 * diameter * diameter;
-    dto.volume = volume;
+    data.volume = volume;
 
-    return await this.Areaservice.createData(userId, dto);
+    return await this.Areaservice.createData(userId, data);
   }
 
   @Patch('/:id')
