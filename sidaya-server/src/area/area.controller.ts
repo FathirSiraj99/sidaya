@@ -12,6 +12,7 @@ import {
 import { AreaService } from './area.service';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('area')
 export class AreaController {
   constructor(private Areaservice: AreaService) { }

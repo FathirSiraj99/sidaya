@@ -1,6 +1,11 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, UseGuards } from '@nestjs/common';
 import { ActivityTemplateService } from './activity-template.service';
+import { Role } from "@prisma/client";
+import { RolesGuard } from '../auth/guard/roles.guard';
+import { Roles } from '../auth/roles.decorator';
+import { AuthGuard } from '../auth/guard/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller('activity-template')
 export class ActivityTemplateController {
     constructor(private service: ActivityTemplateService) {}
@@ -29,6 +34,8 @@ export class ActivityTemplateController {
      * @param body 
      * @returns 
      */
+    @UseGuards(RolesGuard)
+    @Roles(Role.ADMIN)
     @Post()
     async create(@Body() body: any) {
         return await this.service.createData(body)

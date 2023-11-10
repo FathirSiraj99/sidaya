@@ -23,7 +23,7 @@ export class AuthController {
   @Roles(Role.ADMIN)
   @Get()
   async muhaha() {
-    return "klsjdfldsjf"
+    return "kntol"
   }
 
 }

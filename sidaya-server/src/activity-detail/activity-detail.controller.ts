@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post , UseGuards } from '@nestjs/common';
 import { ActivityDetailService } from './activity-detail.service';
 import { ActivityDetailDto } from './activity-detail.dto';
+import { AuthGuard } from "../auth/guard/auth.guard";
 
+@UseGuards(AuthGuard)
 @Controller('activity-detail')
 export class ActivityDetailController {
     constructor(private service: ActivityDetailService) {}

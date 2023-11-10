@@ -9,7 +9,7 @@ import { ActivityService } from './activity.service';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { ActivityDetailDto } from 'src/activity-detail/activity-detail.dto';
 
-// @UseGuards(AuthGuard)
+@UseGuards(AuthGuard)
 @Controller('activity')
 export class ActivityController {
   constructor(private activity: ActivityService) { }
