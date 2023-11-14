@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { GoneException, Injectable, NotFoundException } from '@nestjs/common';
 import { ActivityService } from 'src/activity/activity.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -10,13 +10,21 @@ export class AreaService {
   ) { }
 
   async findAll() {
-    return await this.db.area.findMany()
+    const area = await this.db.area.findMany();
+
+    if (!area || area.length === 0) return new GoneException("Area Is Missing")
+
+    return area
   }
 
   async findAllByUserId(userId: number) {
-    return await this.db.area.findMany({
+    const area = await this.db.area.findMany({
       where: { userId }
     });
+
+    if (!area || area.length === 0) return new GoneException("Area Is Missing")
+
+    return area
   }
 
   async findById(areaId: string) {
@@ -37,10 +45,6 @@ export class AreaService {
       return await this.activityService.findAllProblemByAreaId(areaId)
     }
 
-    if (area.activityDetailId === null) {
-      return await this.activityService.startActivity(areaId)
-    }
-
     return await this.activityService.findAllActivityByAreaId(areaId)
   }
 
@@ -55,35 +59,28 @@ export class AreaService {
     return await this.activityService.startActivity(newArea.id)
   }
 
-  /**
-   * Update area
-   * @param id
-   * @param data
-   */
   async updateData(id: string, data: any) {
+    const area = await this.db.area.findUnique({
+      where: { id }
+    })
+
+    if (!area) return new NotFoundException("Area Not Found")
+
     return await this.db.area.update({
-      data: data,
-      where: {
-        id: id,
-      },
+      where: { id },
+      data: data
     });
   }
 
-  // /**
-  //  * Delete area
-  //  * @param id
-  //  */
-  // async deleteData(id: string) {
-  //   await this.db.activity.deleteMany({
-  //     where: {
-  //       areaId: id
-  //     }
-  //   })
+  async deleteData(id: string) {
+    const area = await this.db.area.findUnique({
+      where: { id }
+    })
 
-  //   return await this.db.area.delete({
-  //     where: {
-  //       id: id,
-  //     },
-  //   });
-  // }
+    if (!area) return new NotFoundException("Area Not Found")
+
+    return await this.db.area.delete({
+      where: { id }
+    });
+  }
 }

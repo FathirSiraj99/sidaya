@@ -1,11 +1,14 @@
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
+
 -- CreateTable
-CREATE TABLE "acitivity_template" (
+CREATE TABLE "activity_template" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "acitivity_template_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "activity_template_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -33,13 +36,15 @@ CREATE TABLE "area" (
     "volume" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "weight" DOUBLE PRECISION DEFAULT 0,
     "water_level" INTEGER DEFAULT 0,
-    "isActive" INTEGER NOT NULL DEFAULT 0,
+    "is_active" INTEGER NOT NULL DEFAULT 0,
     "status" INTEGER,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
     "activity_template_id" TEXT,
     "activity_detail_id" TEXT,
-    "userId" INTEGER,
+    "user_id" INTEGER,
+    "problem_id" TEXT,
+    "problem_detail_id" TEXT,
 
     CONSTRAINT "area_pkey" PRIMARY KEY ("id")
 );
@@ -57,18 +62,29 @@ CREATE TABLE "problem" (
 );
 
 -- CreateTable
-CREATE TABLE "ProblemDetail" (
+CREATE TABLE "problem_detail" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "nth_day" INTEGER NOT NULL DEFAULT 0,
     "time" TEXT NOT NULL,
     "turn" TEXT NOT NULL,
     "formula" JSONB,
-    "problemId" TEXT NOT NULL,
+    "problem_id" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
-    CONSTRAINT "ProblemDetail_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "problem_detail_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Notification" (
+    "id" TEXT NOT NULL,
+    "message" TEXT NOT NULL,
+    "type" INTEGER NOT NULL DEFAULT 1,
+    "userId" INTEGER,
+    "isOpened" BOOLEAN NOT NULL DEFAULT false,
+
+    CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -78,6 +94,7 @@ CREATE TABLE "user" (
     "password" TEXT NOT NULL,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "roles" "Role" NOT NULL DEFAULT 'USER',
 
     CONSTRAINT "user_pkey" PRIMARY KEY ("id")
 );
@@ -86,19 +103,28 @@ CREATE TABLE "user" (
 CREATE UNIQUE INDEX "user_username_key" ON "user"("username");
 
 -- AddForeignKey
-ALTER TABLE "activity_detail" ADD CONSTRAINT "activity_detail_activity_template_fkey" FOREIGN KEY ("activity_template") REFERENCES "acitivity_template"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "activity_detail" ADD CONSTRAINT "activity_detail_activity_template_fkey" FOREIGN KEY ("activity_template") REFERENCES "activity_template"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "area" ADD CONSTRAINT "area_activity_template_id_fkey" FOREIGN KEY ("activity_template_id") REFERENCES "acitivity_template"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "area" ADD CONSTRAINT "area_activity_template_id_fkey" FOREIGN KEY ("activity_template_id") REFERENCES "activity_template"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "area" ADD CONSTRAINT "area_activity_detail_id_fkey" FOREIGN KEY ("activity_detail_id") REFERENCES "activity_detail"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "area" ADD CONSTRAINT "area_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "area" ADD CONSTRAINT "area_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "problem" ADD CONSTRAINT "problem_activity_template_id_fkey" FOREIGN KEY ("activity_template_id") REFERENCES "acitivity_template"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "area" ADD CONSTRAINT "area_problem_id_fkey" FOREIGN KEY ("problem_id") REFERENCES "problem"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ProblemDetail" ADD CONSTRAINT "ProblemDetail_problemId_fkey" FOREIGN KEY ("problemId") REFERENCES "problem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "area" ADD CONSTRAINT "area_problem_detail_id_fkey" FOREIGN KEY ("problem_detail_id") REFERENCES "problem_detail"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "problem" ADD CONSTRAINT "problem_activity_template_id_fkey" FOREIGN KEY ("activity_template_id") REFERENCES "activity_template"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "problem_detail" ADD CONSTRAINT "problem_detail_problem_id_fkey" FOREIGN KEY ("problem_id") REFERENCES "problem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;

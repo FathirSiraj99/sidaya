@@ -1,39 +1,32 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards, } from '@nestjs/common';
 import { AreaService } from './area.service';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
+import { RolesGuard } from 'src/auth/guard/roles.guard';
+import { Roles } from 'src/auth/roles.decorator';
+import { Role } from '@prisma/client';
 
+@UseGuards(AuthGuard, RolesGuard)
 @Controller('area')
 export class AreaController {
   constructor(private Areaservice: AreaService) { }
 
-
-  @Get()
+  @Roles(Role.ADMIN)
+  @Get('find-all')
   async getAll() {
     return await this.Areaservice.findAll();
   }
 
-  @Get('find')
+  @Get('')
   async getAllByUserId(@Req() req) {
     const userId = req.user.sub
     return await this.Areaservice.findAllByUserId(userId)
   }
 
-  @Get('/:id')
+  @Get('find/:id')
   async getById(@Param('id') id: string) {
     return await this.Areaservice.findById(id);
   }
 
-  @UseGuards(AuthGuard)
   @Post()
   async create(@Req() req, @Body() data: any) {
     const userId = req.user.sub
@@ -44,18 +37,15 @@ export class AreaController {
     return await this.Areaservice.createData(userId, data);
   }
 
-  @Patch('/:id')
-  async update(@Param('id') id: string, @Body() body: any) {
-    return await this.Areaservice.updateData(id, body);
+  @Roles(Role.ADMIN)
+  @Patch('update/:id')
+  async update(@Param('id') id: string, @Body() data: any) {
+    return await this.Areaservice.updateData(id, data);
   }
 
-  // /**
-  //  * Delete activity_template
-  //  * @param id
-  //  * @returns
-  //  */
-  // @Delete('/:id')
-  // async delete(@Param('id') id: string) {
-  //   return await this.Areaservice.deleteData(id);
-  // }
+  @Roles(Role.ADMIN)
+  @Delete('delete/:id')
+  async delete(@Param('id') id: string) {
+    return await this.Areaservice.deleteData(id);
+  }
 }

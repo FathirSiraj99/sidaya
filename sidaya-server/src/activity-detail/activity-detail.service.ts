@@ -1,50 +1,32 @@
-import { Injectable } from '@nestjs/common';
+import { GoneException, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { ActivityDetailDto } from './activity-detail.dto';
 
 @Injectable()
 export class ActivityDetailService {
   constructor(private db: PrismaService) { }
 
-  /**
-   * Get All activityDetail
-   * @returns
-   */
-  async findAll() {
-    return await this.db.activityDetail.findMany({
-      include: {
-        activityTemplate: {
-          select: {
-            name: true,
-          },
-        },
-      },
-    });
-  }
-
-  /**
-   * Get All by activityTemplateId = area.activityTemplateId
-   * @param id 
-   * @returns 
-   */
   async findAllByTemplate(id: string) {
-    return await this.db.activityDetail.findMany({
+    const activityDetail = await this.db.activityDetail.findMany({
       where: {
         activityTemplateId: id
+      },
+      orderBy: { turn: 'asc' },
+      select: {
+        name: true,
+        turn: true,
+        nthday: true,
+        time: true
       }
     })
+
+    if (activityDetail.length === 0) return new GoneException("Activiy Detail Is Missing")
+
+    return activityDetail
   }
 
-  /**
-   * Get One activityDetail By id
-   * @param id
-   * @returns
-   */
   async findById(id: string) {
     return await this.db.activityDetail.findUnique({
-      where: {
-        id: id,
-      },
+      where: { id },
       include: {
         activityTemplate: {
           select: {
@@ -55,23 +37,24 @@ export class ActivityDetailService {
     });
   }
 
-  /**
-   * Create activityDetail
-   * @param data
-   * @returns
-   */
-  async createData(data: ActivityDetailDto) {
+  async createData(data: any) {
+    const timeWithSeconds = `${data.time}:00`;
+
     return await this.db.activityDetail.create({
-      data: data,
+      data: {
+        ...data,
+        time: timeWithSeconds
+      },
     });
   }
 
-  /**
-   * Update activityDetail
-   * @param id
-   * @param data
-   */
   async updateData(id: string, data: any) {
+    const activityDetail = await this.db.activityDetail.findUnique({
+      where: { id }
+    })
+
+    if (!activityDetail) return new NotFoundException("Activity Detail Not Found")
+
     return await this.db.activityDetail.update({
       data: data,
       where: {
@@ -80,15 +63,15 @@ export class ActivityDetailService {
     });
   }
 
-  /**
-   * Delete activityDetail
-   * @param id
-   */
   async deleteData(id: string) {
+    const activityDetail = await this.db.activityDetail.findUnique({
+      where: { id }
+    })
+
+    if (!activityDetail) return new NotFoundException("Activity Detail Not Found")
+
     return await this.db.activityDetail.delete({
-      where: {
-        id: id,
-      },
+      where: { id }
     });
   }
 }

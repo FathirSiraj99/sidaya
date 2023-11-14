@@ -1,72 +1,64 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { GoneException, Injectable, NotFoundException } from '@nestjs/common';
+import { ActivityDetailService } from 'src/activity-detail/activity-detail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
 export class ActivityTemplateService {
-  constructor(private db: PrismaService) { }
+  constructor(
+    private db: PrismaService,
+    private activityDetail: ActivityDetailService
+  ) { }
 
-  /**
-   * Get All activityTemplate
-   * @returns
-   */
   async findAll() {
-    return await this.db.activityTemplate.findMany();
+    const activityTemplate = await this.db.activityTemplate.findMany();
+
+    if (activityTemplate.length === 0) throw new GoneException('Activity Template Is Missing')
+
+    return activityTemplate
   }
 
-  /**
-   * Get One activityTemplate By id
-   * @param id
-   * @returns
-   */
   async findById(id: string) {
-    const template = await this.db.activityTemplate.findUnique({
-      where: { id: id },
-      include: { activityDetail: true }
+    const activityTemplate = await this.db.activityTemplate.findUnique({
+      where: { id }
     });
-  
-    if (template) {
-    const displayedActivityDetails = template.activityDetail.slice(0, 3);
-      return { ...template, activityDetail: displayedActivityDetails };
-    }
-  
-    return console.log({msg:"tidak dapat menemukan aktivitas"});
-  }
-  
 
-  /**
-   * Create activityTemplate
-   * @param data
-   * @returns
-   */
+    const activityDetail = await this.activityDetail.findAllByTemplate(id)
+
+    if (!activityTemplate) throw new NotFoundException("Activity Template Not Found")
+
+    return {}
+  }
+
   async createData(data: any) {
     return await this.db.activityTemplate.create({
       data: data,
     });
   }
 
-  /**
-   * Update activityTemplate
-   * @param id
-   * @param data
-   */
   async updateData(id: string, data: any) {
-    return await this.db.activityTemplate.update({
+    const activityTemplate = await this.db.activityTemplate.findUnique({
+      where: { id }
+    })
+
+    if (!activityTemplate) throw new NotFoundException("Activity Template Not Found")
+
+    const updatedActivityTemplate = await this.db.activityTemplate.update({
+      where: { id },
       data: data,
-      where: {
-        id: id,
-      },
     });
+
+    return updatedActivityTemplate
   }
 
-  /**
-   * Delete activityTemplate
-   * @param id
-   */
   async deleteData(id: string) {
+    const activityTemplate = await this.db.activityTemplate.findUnique({
+      where: { id }
+    })
+
+    if (!activityTemplate) throw new NotFoundException("Activity Template Not Found")
+
     return await this.db.activityTemplate.delete({
-      where: {
-        id: id,
-      },
+      where: { id }
     });
   }
 }

@@ -9,9 +9,11 @@ import { ActivityModule } from './activity/activity.module';
 import { AuthModule } from './auth/auth.module';
 import { ProblemDetailModule } from './problem-detail/problem-detail.module';
 import { ProblemModule } from './problem/problem.module';
+import { NotificationModule } from './notification/notification.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
-  imports: [PrismaModule, ActivityTemplateModule, AreaModule, ActivityDetailModule, ActivityModule, AuthModule, ProblemDetailModule, ProblemModule],
+  imports: [PrismaModule, ActivityTemplateModule, AreaModule, ActivityDetailModule, ActivityModule, AuthModule, ProblemDetailModule, ProblemModule, NotificationModule, ScheduleModule.forRoot()],
   controllers: [AppController],
   providers: [AppService,],
 })

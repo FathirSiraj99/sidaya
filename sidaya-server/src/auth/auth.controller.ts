@@ -18,12 +18,4 @@ export class AuthController {
   async loginWithUsername(@Body() data: any) {
     return await this.authService.login(data)
   }
-
-  @UseGuards(AuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
-  @Get()
-  async muhaha() {
-    return "klsjdfldsjf"
-  }
-
 }

@@ -10,11 +10,6 @@ export class ProblemController {
     return this.problemService.createData(data);
   }
 
-  @Get('find/:activityTemplateId')
-  async findAllByActivityTemplate(@Param('activityTemplateId') activityTemplateId: string) {
-    return this.problemService.findAllByActivityTemplate(activityTemplateId);
-  }
-
   @Get()
   async findAll() {
     return this.problemService.findAll();
@@ -30,7 +25,7 @@ export class ProblemController {
     return this.problemService.update(id, data);
   }
 
-  @Delete(':id')
+  @Delete('delete:id')
   async remove(@Param('id') id: string) {
     return this.problemService.remove(id);
   }
