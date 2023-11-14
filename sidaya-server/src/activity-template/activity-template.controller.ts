@@ -20,6 +20,15 @@ export class ActivityTemplateController {
         return await this.service.findById(id)
     }
 
+<<<<<<< HEAD
+=======
+    /**
+     * Create activity_template
+     * @param body 
+     * @returns 
+     */
+    @UseGuards(RolesGuard)
+>>>>>>> d332669224c2b470da936b28a8ab819ed0964ffe
     @Roles(Role.ADMIN)
     @Post()
     async create(@Body() data: any) {
