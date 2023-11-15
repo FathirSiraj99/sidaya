@@ -11,12 +11,6 @@ export class ActivityDetailService {
         activityTemplateId: id
       },
       orderBy: { turn: 'asc' },
-      select: {
-        name: true,
-        turn: true,
-        nthDay: true,
-        time: true
-      }
     })
 
     if (activityDetail.length === 0) return new GoneException("Activiy Detail Is Missing")

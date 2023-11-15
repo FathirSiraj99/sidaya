@@ -11,9 +11,10 @@ import { ProblemDetailModule } from './problem-detail/problem-detail.module';
 import { ProblemModule } from './problem/problem.module';
 import { NotificationModule } from './notification/notification.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { UserModule } from './user/user.module';
 
 @Module({
-  imports: [PrismaModule, ActivityTemplateModule, AreaModule, ActivityDetailModule, ActivityModule, AuthModule, ProblemDetailModule, ProblemModule, NotificationModule, ScheduleModule.forRoot()],
+  imports: [PrismaModule, ActivityTemplateModule, AreaModule, ActivityDetailModule, ActivityModule, AuthModule, ProblemDetailModule, ProblemModule, NotificationModule, ScheduleModule.forRoot(), UserModule],
   controllers: [AppController],
   providers: [AppService,],
 })
