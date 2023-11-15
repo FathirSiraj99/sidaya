@@ -8,18 +8,15 @@ export class ActivityService {
 
   async findAllActivityByAreaId(areaId: string) {
     const area = await this.db.area.findUnique({
-      where: { id: areaId }
+      where: { id: areaId },
+      include: { ActivityDetail: { select: { turn: true } } }
     })
-
-    const turn = await this.db.activityDetail.findFirst({
-      where: { id: area.activityDetailId }
-    });
 
     const newActivity = await this.db.activityDetail.findMany({
       where: {
         activityTemplateId: area.activityTemplateId,
         turn: {
-          gte: turn.turn
+          gte: area.ActivityDetail.turn
         }
       },
       select: {
@@ -41,18 +38,15 @@ export class ActivityService {
 
   async findAllProblemByAreaId(areaId: string) {
     const area = await this.db.area.findUnique({
-      where: { id: areaId }
+      where: { id: areaId },
+      include: { ProblemDetail: true }
     })
-
-    const turn = await this.db.problemDetail.findFirst({
-      where: { problemId: area.problemId }
-    });
 
     const newProblem = await this.db.problemDetail.findMany({
       where: {
         problemId: area.problemId,
         turn: {
-          gte: turn.turn
+          gte: area.ProblemDetail.turn
         }
       },
       select: {
@@ -77,12 +71,8 @@ export class ActivityService {
       where: { id: areaId }
     })
 
-    const activityTemplate = await this.db.activityTemplate.findFirst({
-      where: { id: area.activityTemplateId }
-    })
-
     const newActivity = await this.db.activityDetail.findMany({
-      where: { activityTemplateId: activityTemplate.id },
+      where: { activityTemplateId: area.activityTemplateId },
       orderBy: {
         turn: 'asc'
       },
@@ -100,14 +90,21 @@ export class ActivityService {
   }
 
   async nextActivity(areaId: string, activityId: string) {
+    console.log(activityId)
     const area = await this.db.area.findFirst({
       where: { id: areaId }
     });
 
-    if (!area) throw new NotFoundException("Area not found");
-
     if (area.problemId !== null) {
       return await this.nextProblem(areaId, activityId)
+    }
+
+    const activityDetail = await this.db.activityDetail.findUnique({
+      where: { id: activityId }
+    })
+
+    if (area.nthDay < activityDetail.nthDay) {
+      return await this.findAllActivityByAreaId(areaId)
     }
 
     const updatedArea = await this.db.area.update({
@@ -117,15 +114,11 @@ export class ActivityService {
       }
     });
 
-    const turn = await this.db.activityDetail.findFirst({
-      where: { id: updatedArea.activityDetailId }
-    });
-
     const newActivity = await this.db.activityDetail.findMany({
       where: {
         activityTemplateId: updatedArea.activityTemplateId,
         turn: {
-          gte: turn.turn + 1
+          gte: activityDetail.turn
         }
       },
       select: {
@@ -134,24 +127,37 @@ export class ActivityService {
       },
       orderBy: {
         turn: 'asc'
-      }
+      },
+      take: 3
     });
 
     if (newActivity.length === 0) {
-      await this.db.area.update({
+      const updatedArea = await this.db.area.update({
         where: { id: areaId },
         data: {
           activityTemplateId: null,
           activityDetailId: null
         }
       })
-      return { area, activity: "Selamat kamu telah selesai" }
+      return { updatedArea, activity: "Selamat kamu telah selesai" }
     }
 
-    return { area, activity: newActivity };
+    return { updatedArea, activity: newActivity };
   }
 
   async nextProblem(areaId: string, activityId: string) {
+
+    const area = await this.db.area.findUnique({
+      where: { id: areaId }
+    })
+
+    const problemDetail = await this.db.problemDetail.findUnique({
+      where: { id: activityId }
+    })
+
+    if (area.nthDay < problemDetail.nthDay) {
+      return await this.findAllProblemByAreaId(areaId)
+    }
 
     const updatedArea = await this.db.area.update({
       where: { id: areaId },
@@ -160,15 +166,11 @@ export class ActivityService {
       }
     });
 
-    const turn = await this.db.problemDetail.findFirst({
-      where: { id: updatedArea.problemDetailId }
-    });
-
     const newProblem = await this.db.problemDetail.findMany({
       where: {
         problemId: updatedArea.problemId,
         turn: {
-          gte: turn.turn
+          gte: problemDetail.turn
         }
       },
       select: {
@@ -177,14 +179,21 @@ export class ActivityService {
       },
       orderBy: {
         turn: 'asc'
-      }
+      },
+      take: 3
     });
 
     if (newProblem.length === 0) {
+      const activityDetail = await this.db.activityDetail.findUnique({
+        where: { id: area.activityDetailId }
+      })
+
       const updatedArea = await this.db.area.update({
         where: { id: areaId },
         data: {
-          problemId: null
+          nthDay: activityDetail.nthDay,
+          problemId: null,
+          problemDetailId: null
         }
       })
 
@@ -201,14 +210,32 @@ export class ActivityService {
 
     if (!area) throw new NotFoundException("Area not found");
 
+    const newProblem = await this.db.problemDetail.findMany({
+      where: {
+        problemId,
+      },
+      select: {
+        id: true,
+        name: true
+      },
+      orderBy: {
+        turn: 'asc'
+      },
+      take: 3
+    });
+
+    const firstProblem = newProblem[0]
+
     const updatedArea = await this.db.area.update({
       where: { id: areaId },
       data: {
-        problemId: problemId
+        nthDay: 1,
+        problemId: problemId,
+        problemDetailId: firstProblem.id
       }
     })
 
-    return await this.findAllProblemByAreaId(updatedArea.id)
+    return { updatedArea, problem: newProblem }
   }
 
   async formula(formula: Prisma.JsonValue, id: string): Promise<string> {

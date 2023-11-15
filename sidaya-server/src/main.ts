@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { NotificationService } from './notification/notification.service';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -8,11 +8,14 @@ async function bootstrap() {
   app.setGlobalPrefix('api');
   app.enableCors();
 
-  // const notificationService = app.get(NotificationService);
-
-  // setInterval(() => {
-  //   notificationService.handleScheduledTask();
-  // }, 1000);
+  const config = new DocumentBuilder()
+    .setTitle('SIDAYA ')
+    .setDescription('The cats API description')
+    .setVersion('1.0')
+    .addTag('cats')
+    .build();
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('swagger', app, document);
 
   await app.listen(process.env.PORT, () => {
     console.log('Successfully Connected');

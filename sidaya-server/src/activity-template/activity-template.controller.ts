@@ -4,7 +4,9 @@ import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from '@prisma/client';
+import { ApiTags } from '@nestjs/swagger';
 
+@ApiTags('activity-template')
 @UseGuards(AuthGuard, RolesGuard)
 @Controller('activity-template')
 export class ActivityTemplateController {
@@ -20,15 +22,6 @@ export class ActivityTemplateController {
         return await this.service.findById(id)
     }
 
-<<<<<<< HEAD
-=======
-    /**
-     * Create activity_template
-     * @param body 
-     * @returns 
-     */
-    @UseGuards(RolesGuard)
->>>>>>> d332669224c2b470da936b28a8ab819ed0964ffe
     @Roles(Role.ADMIN)
     @Post()
     async create(@Body() data: any) {

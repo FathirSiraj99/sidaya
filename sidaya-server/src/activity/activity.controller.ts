@@ -7,9 +7,9 @@ import { AuthGuard } from 'src/auth/guard/auth.guard';
 export class ActivityController {
   constructor(private activity: ActivityService) { }
 
-  @Post('next/:areaId')
-  async nextActivity(@Param('areaId') areaId: string, @Body() activityDetailId: string) {
-    return await this.activity.nextActivity(areaId, activityDetailId)
+  @Post('next/:areaId/:activityId')
+  async nextActivity(@Param('areaId') areaId: string, @Param('activityId') activityId: string) {
+    return await this.activity.nextActivity(areaId, activityId)
   }
 
   @Post('problem/:areaId/')

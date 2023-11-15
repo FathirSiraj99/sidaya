@@ -1,21 +1,22 @@
-import { Body, Controller, Post, Get, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthGuard } from './guard/auth.guard';
-import { RolesGuard } from './guard/roles.guard';
-import { Roles } from './roles.decorator';
-import { Role } from '@prisma/client';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
+import { AuthLoginDto, AuthRegisterDto } from './auth.dto';
 
+@ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) { }
 
   @Post('register')
-  async register(@Body() data: any) {
+  @ApiBody({ type: [AuthRegisterDto] })
+  async register(@Body() data: AuthRegisterDto) {
     return await this.authService.register(data)
   }
 
   @Post('login')
-  async loginWithUsername(@Body() data: any) {
+  @ApiBody({ type: [AuthLoginDto] })
+  async loginWithUsername(@Body() data: AuthLoginDto) {
     return await this.authService.login(data)
   }
 }

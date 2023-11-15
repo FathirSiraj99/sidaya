@@ -14,7 +14,7 @@ export class ActivityDetailService {
       select: {
         name: true,
         turn: true,
-        nthday: true,
+        nthDay: true,
         time: true
       }
     })
