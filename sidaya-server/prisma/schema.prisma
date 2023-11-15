@@ -113,7 +113,6 @@ model User {
   id           Int            @id @default(autoincrement())
   username     String         @unique
   password     String
-  nthDay       Int?
   createdAt    DateTime       @default(now()) @map(name: "created_at")
   updatedAt    DateTime       @updatedAt @map(name: "updated_at")
   roles        Role           @default(USER)
