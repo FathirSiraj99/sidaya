@@ -12,7 +12,7 @@ export class AuthService {
     ) { }
 
     async register(data: AuthRegisterDto) {
-        const existingUser = await this.prisma.user.findUnique({
+        const existingUser = await this.prisma.user.findFirst({
             where: { username: data.username }
         })
 
