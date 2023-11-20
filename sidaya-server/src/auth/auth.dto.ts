@@ -7,9 +7,6 @@ export class AuthRegisterDto {
 
     @ApiProperty({ minimum: 8, type: String })
     password: string
-
-    @ApiProperty({ enum: ['ADMIN', 'USER'], default: 'USER' })
-    role: Role
 }
 
 export class AuthLoginDto {
