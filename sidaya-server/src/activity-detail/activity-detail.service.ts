@@ -13,7 +13,7 @@ export class ActivityDetailService {
       orderBy: { turn: 'asc' },
     })
 
-    if (activityDetail.length === 0) return new GoneException("Activiy Detail Is Missing")
+    if (activityDetail.length === 0) return "Activity Detail Tidak Ada"
 
     return activityDetail
   }

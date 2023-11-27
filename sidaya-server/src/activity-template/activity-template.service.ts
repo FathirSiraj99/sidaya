@@ -26,7 +26,7 @@ export class ActivityTemplateService {
 
     if (!activityTemplate) throw new NotFoundException("Activity Template Not Found")
 
-    return { activityTemplate, activityDetail }
+    return {activityTemplate, activityDetail: activityDetail}
   }
 
   async createData(data: any) {
