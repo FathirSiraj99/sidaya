@@ -12,7 +12,7 @@ export class ActivityTemplateService {
   async findAll() {
     const activityTemplate = await this.db.activityTemplate.findMany();
 
-    if (activityTemplate.length === 0) return "Activity Template Tidak ada"
+    if (activityTemplate.length === 0) return []
 
     return activityTemplate
   }
