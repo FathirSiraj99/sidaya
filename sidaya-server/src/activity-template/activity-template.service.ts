@@ -1,4 +1,4 @@
-import { GoneException, Injectable, NotFoundException } from '@nestjs/common';
+import { GoneException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { ActivityDetailService } from 'src/activity-detail/activity-detail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -12,9 +12,10 @@ export class ActivityTemplateService {
   async findAll() {
     const activityTemplate = await this.db.activityTemplate.findMany();
 
-    // if (activityTemplate.length === 0) return []
-
-    return activityTemplate
+    return {
+      response: HttpStatus.OK,
+      data: activityTemplate
+    }
   }
 
   async findById(id: string) {
@@ -26,13 +27,24 @@ export class ActivityTemplateService {
 
     if (!activityTemplate) throw new NotFoundException("Activity Template Not Found")
 
-    return {activityTemplate, activityDetail: activityDetail}
+    return {
+      response: HttpStatus.OK,
+      data: {
+        activityTemplate: activityTemplate,
+        activityDetail: activityDetail.data
+      }
+    }
   }
 
   async createData(data: any) {
-    return await this.db.activityTemplate.create({
+    const createData = await this.db.activityTemplate.create({
       data: data,
     });
+
+    return {
+      response: HttpStatus.CREATED,
+      data: createData
+    }
   }
 
   async updateData(id: string, data: any) {
@@ -47,7 +59,10 @@ export class ActivityTemplateService {
       data: data,
     });
 
-    return updatedActivityTemplate
+    return {
+      response: HttpStatus.OK,
+      data: updatedActivityTemplate
+    }
   }
 
   async deleteData(id: string) {
@@ -57,8 +72,13 @@ export class ActivityTemplateService {
 
     if (!activityTemplate) throw new NotFoundException("Activity Template Not Found")
 
-    return await this.db.activityTemplate.delete({
+    const deletedActivityTemplate = await this.db.activityTemplate.delete({
       where: { id }
     });
+
+    return {
+      response: HttpStatus.OK,
+      data: deletedActivityTemplate
+    }
   }
 }

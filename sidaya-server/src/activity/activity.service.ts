@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 
@@ -30,10 +30,22 @@ export class ActivityService {
     });
 
     if (newActivity.length === 0) {
-      return { area, activity: "Selamat kamu telah selesai" }
+      return {
+        response: HttpStatus.GONE,
+        data: {
+          area: area,
+          activity: []
+        }
+      }
     }
 
-    return { area, activity: newActivity };
+    return {
+      response: HttpStatus.OK,
+      data: {
+        area: area,
+        activity: newActivity
+      }
+    }
   }
 
   async findAllProblemByAreaId(areaId: string) {
@@ -60,10 +72,19 @@ export class ActivityService {
     });
 
     if (newProblem.length === 0) {
-      return { area, activity: "Selamat kamu telah selesai" }
+      return {
+        response: HttpStatus.GONE,
+        data: []
+      }
     }
 
-    return { area, problem: newProblem };
+    return {
+      response: HttpStatus.OK,
+      data: {
+        area: area,
+        problem: newProblem
+      }
+    }
   }
 
   async startActivity(areaId: string) {
@@ -86,7 +107,13 @@ export class ActivityService {
       data: { activityDetailId: firstActivity.id }
     })
 
-    return { updatedArea, activity: newActivity }
+    return {
+      response: HttpStatus.OK,
+      data: {
+        area: updatedArea,
+        activity: newActivity
+      }
+    }
   }
 
   async nextActivity(areaId: string, activityId: string) {
@@ -139,10 +166,20 @@ export class ActivityService {
           activityDetailId: null
         }
       })
-      return { updatedArea, activity: "Selamat kamu telah selesai" }
+      return {
+        response: HttpStatus.OK,
+        data: {
+          area: updatedArea,
+          activity: []
+        }
+      }
     }
 
-    return { updatedArea, activity: newActivity };
+    return {
+      response: HttpStatus.OK,
+      area: updatedArea,
+      activity: newActivity
+    }
   }
 
   async nextProblem(areaId: string, activityId: string) {
@@ -197,10 +234,22 @@ export class ActivityService {
         }
       })
 
-      return { updatedArea, activity: "Selamat kamu telah selesai" }
+      return {
+        response: HttpStatus.OK,
+        data: {
+          area: updatedArea,
+          activity: []
+        }
+      }
     }
 
-    return { updatedArea, problem: newProblem };
+    return {
+      response: HttpStatus.OK,
+      data: {
+        area: updatedArea,
+        problem: newProblem
+      }
+    }
   }
 
   async includeProblem(areaId: string, problemId: string) {
@@ -235,7 +284,13 @@ export class ActivityService {
       }
     })
 
-    return { updatedArea, problem: newProblem }
+    return {
+      response: HttpStatus.OK,
+      data: {
+        area: updatedArea,
+        problem: newProblem
+      }
+    }
   }
 
   async formula(formula: Prisma.JsonValue, id: string): Promise<string> {

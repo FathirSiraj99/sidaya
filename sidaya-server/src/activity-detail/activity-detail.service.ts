@@ -1,4 +1,4 @@
-import { GoneException, Injectable, NotFoundException } from '@nestjs/common';
+import { GoneException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
 
 @Injectable()
@@ -13,13 +13,21 @@ export class ActivityDetailService {
       orderBy: { turn: 'asc' },
     })
 
-    if (activityDetail.length === 0) return "Activity Detail Tidak Ada"
+    if (activityDetail.length === 0) {
+      return {
+        response: HttpStatus.OK,
+        data: []
+      }
+    }
 
-    return activityDetail
+    return {
+      response: HttpStatus.OK,
+      data: activityDetail
+    }
   }
 
   async findById(id: string) {
-    return await this.db.activityDetail.findUnique({
+    const activityDetail = await this.db.activityDetail.findUnique({
       where: { id },
       include: {
         activityTemplate: {
@@ -29,17 +37,31 @@ export class ActivityDetailService {
         },
       },
     });
+
+    if (!activityDetail) {
+      throw new NotFoundException("Activity Detail Tidak Ada")
+    }
+
+    return {
+      response: HttpStatus.OK,
+      data: activityDetail
+    }
   }
 
   async createData(data: any) {
     const timeWithSeconds = `${data.time}:00`;
 
-    return await this.db.activityDetail.create({
+    const createData = await this.db.activityDetail.create({
       data: {
         ...data,
         time: timeWithSeconds
       },
     });
+
+    return {
+      response: HttpStatus.CREATED,
+      data: createData
+    }
   }
 
   async updateData(id: string, data: any) {
@@ -49,12 +71,17 @@ export class ActivityDetailService {
 
     if (!activityDetail) return new NotFoundException("Activity Detail Not Found")
 
-    return await this.db.activityDetail.update({
+    const updatedActivityDetail = await this.db.activityDetail.update({
       data: data,
       where: {
         id: id,
       },
     });
+
+    return {
+      response: HttpStatus.OK,
+      data: updatedActivityDetail
+    }
   }
 
   async deleteData(id: string) {
@@ -64,8 +91,13 @@ export class ActivityDetailService {
 
     if (!activityDetail) return new NotFoundException("Activity Detail Not Found")
 
-    return await this.db.activityDetail.delete({
+    const deletedActivityDetail = await this.db.activityDetail.delete({
       where: { id }
     });
+
+    return {
+      response: HttpStatus.OK,
+      data: deletedActivityDetail
+    }
   }
 }

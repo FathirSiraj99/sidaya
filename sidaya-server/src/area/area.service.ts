@@ -1,4 +1,4 @@
-import { GoneException, Injectable, NotFoundException } from '@nestjs/common';
+import { GoneException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { ActivityService } from 'src/activity/activity.service';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -56,9 +56,14 @@ export class AreaService {
   async findAll() {
     const area = await this.db.area.findMany();
 
-    if (!area || area.length === 0) return new GoneException("Area Is Missing")
+    if (!area) return { response: HttpStatus.NOT_FOUND }
 
-    return area
+    return {
+      response: HttpStatus.OK,
+      data: {
+        area: area
+      }
+    }
   }
 
   async findAllByUserId(userId: number) {
@@ -66,9 +71,14 @@ export class AreaService {
       where: { userId }
     });
 
-    if (!area || area.length === 0) return new GoneException("Area Is Missing")
+    if (!area) return { response: HttpStatus.NOT_FOUND }
 
-    return area
+    return {
+      response: HttpStatus.OK,
+      data: {
+        area: area
+      }
+    }
   }
 
   async findById(areaId: string) {
@@ -84,7 +94,13 @@ export class AreaService {
     if (!area) throw new NotFoundException("Area not found");
 
     return area.activityTemplateId === null
-      ? { area, activity: "Selamat telah selesai" }
+      ? {
+        response: HttpStatus.OK,
+        data: {
+          area: area,
+          activity: []
+        }
+      }
       : area.problemId !== null
         ? await this.activityService.findAllProblemByAreaId(areaId)
         : await this.activityService.findAllActivityByAreaId(areaId)
@@ -98,7 +114,15 @@ export class AreaService {
       }
     });
 
-    return await this.activityService.startActivity(newArea.id)
+    const startActivity = await this.activityService.startActivity(newArea.id)
+
+    return {
+      response: HttpStatus.CREATED,
+      data: {
+        area: newArea,
+        activity: startActivity.data.activity
+      }
+    }
   }
 
   async updateData(id: string, data: any) {
@@ -108,10 +132,17 @@ export class AreaService {
 
     if (!area) return new NotFoundException("Area Not Found")
 
-    return await this.db.area.update({
+    const updatedArea = await this.db.area.update({
       where: { id },
       data: data
     });
+
+    return {
+      response: HttpStatus.OK,
+      data: {
+        area: updatedArea
+      }
+    }
   }
 
   async deleteData(id: string) {
@@ -121,8 +152,12 @@ export class AreaService {
 
     if (!area) return new NotFoundException("Area Not Found")
 
-    return await this.db.area.delete({
+    const deletedArea = await this.db.area.delete({
       where: { id }
     });
+
+    return {
+      response: HttpStatus.GONE,
+    }
   }
 }
