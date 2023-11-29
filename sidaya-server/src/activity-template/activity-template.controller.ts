@@ -14,7 +14,7 @@ import { ActivityTemplateDto } from './activity-template.dto';
 export class ActivityTemplateController {
     constructor(private service: ActivityTemplateService) { }
 
-    @Get()
+    @Get('find-all')
     @ApiOperation({ summary: 'Get all activity templates' })
     async getAll() {
         return await this.service.findAll()

@@ -14,7 +14,7 @@ import { Role } from '@prisma/client';
 export class UserController {
   constructor(private readonly userService: UserService) { }
 
-  @Get('')
+  @Get('find-all')
   @ApiOperation({ summary: 'Get all users' })
   async findAllUser() {
     return await this.userService.findAllUser()

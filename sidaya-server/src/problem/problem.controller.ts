@@ -22,7 +22,7 @@ export class ProblemController {
     return this.problemService.createData(data);
   }
 
-  @Get()
+  @Get('find-all')
   @ApiOperation({ summary: 'Get all problems' })
   async findAll() {
     return this.problemService.findAll();

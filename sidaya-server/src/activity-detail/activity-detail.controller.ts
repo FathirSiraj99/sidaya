@@ -29,7 +29,7 @@ export class ActivityDetailController {
     }
 
     @Roles(Role.ADMIN)
-    @Post()
+    @Post('create')
     @ApiOperation({ summary: 'Create a new activity detail (Admin Only)' })
     @ApiBody({ description: 'Data for creating an activity detail', type: ActivityDetailDto })
     async create(@Body() data: any) {

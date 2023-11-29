@@ -25,7 +25,7 @@ export class ProblemDetailController {
     return this.problemDetailService.createData(data);
   }
 
-  @Get()
+  @Get('find-all')
   @ApiOperation({ summary: 'Get all problem details' })
   async findAll() {
     return this.problemDetailService.findAll();
