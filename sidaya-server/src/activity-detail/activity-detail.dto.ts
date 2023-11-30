@@ -1,35 +1,33 @@
-import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { ActivityDetail, Prisma } from "@prisma/client";
+import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
+import { ActivityDetailEntity } from "./activity-detail.entity";
+import { Prisma } from "@prisma/client";
 
-export class ActivityDetailEntity implements ActivityDetail {
-    activityTemplateId: string;
-    createdAt: Date;
-    description: string;
-    formula: Prisma.JsonValue;
-    id: string;
+export class CreateActivityDetailDto extends OmitType(ActivityDetailEntity, ['id']) {
+    @ApiProperty()
     name: string;
+    @ApiProperty()
+    description: string;
+    @ApiProperty()
+    formula: Prisma.JsonValue;
+    @ApiProperty()
+    activityTemplateId: string;
+    @ApiProperty()
     nthDay: number;
+    @ApiProperty()
     time: string;
-    turn: string;
-    updatedAt: Date;
 }
 
-export class ActivityDetailDto extends PartialType(ActivityDetailEntity) {
-    @ApiProperty({ required: true })
+export class UpdateActivityDetailDto extends PartialType(CreateActivityDetailDto) {
+    @ApiProperty()
     name?: string;
-
-    @ApiProperty({ nullable: true })
-    description?: string;
-
-    @ApiProperty({ nullable: true })
+    @ApiProperty()
     formula?: Prisma.JsonValue;
-
-    @ApiProperty({ required: true })
+    @ApiProperty()
+    nthDay?: number;
+    @ApiProperty()
     time?: string;
-
-    @ApiProperty({ required: true })
-    turn?: string;
-
-    @ApiProperty({ required: true })
+    @ApiProperty()
+    description?: string;
+    @ApiProperty()
     activityTemplateId?: string;
 }

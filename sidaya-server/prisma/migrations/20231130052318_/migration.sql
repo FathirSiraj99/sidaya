@@ -1,12 +1,16 @@
 -- CreateEnum
 CREATE TYPE "Role" AS ENUM ('USER', 'ADMIN');
 
+-- CreateEnum
+CREATE TYPE "Fish" AS ENUM ('LELE', 'TONGKOL');
+
 -- CreateTable
 CREATE TABLE "activity_template" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "fish" "Fish",
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
 
     CONSTRAINT "activity_template_pkey" PRIMARY KEY ("id")
 );
@@ -16,15 +20,42 @@ CREATE TABLE "activity_detail" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "nth_day" INTEGER NOT NULL DEFAULT 0,
+    "time" TEXT NOT NULL,
+    "turn" INTEGER NOT NULL,
+    "nth_day" INTEGER NOT NULL DEFAULT 1,
+    "formula" JSONB,
+    "activity_template" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
+
+    CONSTRAINT "activity_detail_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "problem" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "description" TEXT NOT NULL,
+    "activity_template_id" TEXT,
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
+
+    CONSTRAINT "problem_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "problem_detail" (
+    "id" TEXT NOT NULL,
+    "name" TEXT NOT NULL,
+    "nth_day" INTEGER NOT NULL DEFAULT 1,
     "time" TEXT NOT NULL,
     "turn" TEXT NOT NULL,
     "formula" JSONB,
-    "activity_template" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "problem_id" TEXT NOT NULL,
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
 
-    CONSTRAINT "activity_detail_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "problem_detail_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -38,53 +69,30 @@ CREATE TABLE "area" (
     "water_level" INTEGER DEFAULT 0,
     "is_active" INTEGER NOT NULL DEFAULT 0,
     "status" INTEGER,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
     "activity_template_id" TEXT,
     "activity_detail_id" TEXT,
     "user_id" INTEGER,
     "problem_id" TEXT,
     "problem_detail_id" TEXT,
+    "nth_day" INTEGER NOT NULL DEFAULT 1,
+    "fish" "Fish",
 
     CONSTRAINT "area_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
-CREATE TABLE "problem" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "description" TEXT NOT NULL,
-    "activity_template_id" TEXT,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "problem_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "problem_detail" (
-    "id" TEXT NOT NULL,
-    "name" TEXT NOT NULL,
-    "nth_day" INTEGER NOT NULL DEFAULT 0,
-    "time" TEXT NOT NULL,
-    "turn" TEXT NOT NULL,
-    "formula" JSONB,
-    "problem_id" TEXT NOT NULL,
-    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP(3) NOT NULL,
-
-    CONSTRAINT "problem_detail_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Notification" (
+CREATE TABLE "notification" (
     "id" TEXT NOT NULL,
     "message" TEXT NOT NULL,
     "type" INTEGER NOT NULL DEFAULT 1,
-    "userId" INTEGER,
+    "userId" INTEGER NOT NULL,
     "isOpened" BOOLEAN NOT NULL DEFAULT false,
+    "created_at" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3),
 
-    CONSTRAINT "Notification_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "notification_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -106,6 +114,12 @@ CREATE UNIQUE INDEX "user_username_key" ON "user"("username");
 ALTER TABLE "activity_detail" ADD CONSTRAINT "activity_detail_activity_template_fkey" FOREIGN KEY ("activity_template") REFERENCES "activity_template"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "problem" ADD CONSTRAINT "problem_activity_template_id_fkey" FOREIGN KEY ("activity_template_id") REFERENCES "activity_template"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "problem_detail" ADD CONSTRAINT "problem_detail_problem_id_fkey" FOREIGN KEY ("problem_id") REFERENCES "problem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "area" ADD CONSTRAINT "area_activity_template_id_fkey" FOREIGN KEY ("activity_template_id") REFERENCES "activity_template"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -121,10 +135,4 @@ ALTER TABLE "area" ADD CONSTRAINT "area_problem_id_fkey" FOREIGN KEY ("problem_i
 ALTER TABLE "area" ADD CONSTRAINT "area_problem_detail_id_fkey" FOREIGN KEY ("problem_detail_id") REFERENCES "problem_detail"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "problem" ADD CONSTRAINT "problem_activity_template_id_fkey" FOREIGN KEY ("activity_template_id") REFERENCES "activity_template"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "problem_detail" ADD CONSTRAINT "problem_detail_problem_id_fkey" FOREIGN KEY ("problem_id") REFERENCES "problem"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "notification" ADD CONSTRAINT "notification_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

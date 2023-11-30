@@ -1,27 +1,47 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { ChangePasswordDto, ChangeUsernameDto, CreateUserDto, UpdateUserDTo } from './user.dto';
+import * as bcrypt from 'bcrypt'
 
 @Injectable()
 export class UserService {
     constructor(private readonly db: PrismaService) { }
 
-    async findAllUser() {
-        const user = await this.db.user.findMany({
-            select: {
-                id: true,
-                username: true,
-                roles: true
+    async create(data: CreateUserDto) {
+        const hashedPassword = bcrypt.hash(data.password, 8)
+        const user = await this.db.user.create({
+            data: {
+                ...data,
+                password: hashedPassword
             }
         })
 
-        if (!user) {
-            return {
-                response: HttpStatus.NOT_FOUND,
+        return {
+            status: HttpStatus.CREATED,
+            data: {
+                user: user
             }
         }
+    }
+
+    async findAll() {
+        const user = await this.db.user.findMany()
 
         return {
-            response: HttpStatus.OK,
+            status: HttpStatus.OK,
+            data: {
+                user: user
+            }
+        }
+    }
+
+    async findAllUser() {
+        const user = await this.db.user.findMany({
+            where: { roles: "USER" }
+        })
+
+        return {
+            status: HttpStatus.OK,
             data: {
                 user: user
             }
@@ -33,53 +53,115 @@ export class UserService {
             where: { roles: 'ADMIN' }
         })
 
-        if (!admin) {
-            return {
-                response: HttpStatus.NOT_FOUND
-            }
-        }
-
         return {
-            response: HttpStatus.OK,
+            status: HttpStatus.OK,
             data: {
-                admin: admin
+                user: admin
             }
         }
     }
 
-    async updateUserToAdmin(id: number) {
-        const updatedAdmin = await this.db.user.update({
-            where: { id },
-            data: { roles: 'ADMIN' }
+    async findById(id: number) {
+        const user = await this.db.user.findUnique({
+            where: { id }
         })
 
-        if (!updatedAdmin) {
+        if (!user) {
             return {
-                response: HttpStatus.NOT_FOUND
+                status: HttpStatus.NOT_FOUND,
+                data: null
             }
         }
 
         return {
-            response: HttpStatus.OK,
+            status: HttpStatus.OK,
             data: {
-                admin: updatedAdmin
+                user: user
+            }
+        }
+    }
+
+    async update(id: number, data: UpdateUserDTo) {
+
+        const hashedPassword = await bcrypt.hash(data.password, 8)
+
+        const updatedUser = await this.db.user.update({
+            where: { id },
+            data: {
+                ...data,
+                password: hashedPassword
+            }
+        })
+
+        return {
+            status: HttpStatus.OK,
+            data: {
+                user: updatedUser
+            }
+        }
+    }
+
+    async updatePassword(id: number, data: ChangePasswordDto) {
+        const user = await this.db.user.findUnique({
+            where: { id }
+        })
+
+        const isPasswordValid = bcrypt.compare(user.password, data.oldPassword)
+        if (!isPasswordValid) {
+            return {
+                status: HttpStatus.UNAUTHORIZED,
+                data: null,
+            }
+        }
+
+        const hashedPassword = bcrypt.hash(data.newPasssword, 8)
+        const updatedUser = await this.db.user.update({
+            where: { id },
+            data: {
+                password: hashedPassword
+            }
+        })
+
+        return {
+            status: HttpStatus.OK,
+            data: {
+                user: updatedUser
+            }
+        }
+    }
+
+    async updateUsername(id: number, data: ChangeUsernameDto) {
+        const existingUsername = await this.db.user.findUnique({
+            where: { username: data.username }
+        })
+
+        if (existingUsername) {
+            return {
+                status: HttpStatus.CONFLICT,
+                data: null,
+            }
+        }
+
+        const updatedUser = await this.db.user.update({
+            where: { id },
+            data
+        })
+
+        return {
+            status: HttpStatus.OK,
+            data: {
+                user: updatedUser
             }
         }
     }
 
     async delete(id: number) {
-        const deletedUser = await this.db.user.delete({
+        await this.db.user.delete({
             where: { id }
         })
 
-        if (!deletedUser) {
-            return {
-                response: HttpStatus.NOT_FOUND
-            }
-        }
-
         return {
-            response: HttpStatus.GONE
+            status: HttpStatus.GONE,
         }
     }
 }

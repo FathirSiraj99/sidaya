@@ -1,13 +1,14 @@
 import { GoneException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { ActivityService } from 'src/activity/activity.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateAreaDto, UpdateAreaDto } from './area.dto';
+import { ActivityService } from 'src/activity/activity.service';
 
 @Injectable()
 export class AreaService {
   constructor(
     private db: PrismaService,
-    private activityService: ActivityService
+    private activity: ActivityService
   ) { }
 
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -54,36 +55,7 @@ export class AreaService {
   }
 
   async findAll() {
-    const area = await this.db.area.findMany();
-
-    if (!area) return { response: HttpStatus.NOT_FOUND }
-
-    return {
-      response: HttpStatus.OK,
-      data: {
-        area: area
-      }
-    }
-  }
-
-  async findAllByUserId(userId: number) {
     const area = await this.db.area.findMany({
-      where: { userId }
-    });
-
-    if (!area) return { response: HttpStatus.NOT_FOUND }
-
-    return {
-      response: HttpStatus.OK,
-      data: {
-        area: area
-      }
-    }
-  }
-
-  async findById(areaId: string) {
-    const area = await this.db.area.findFirst({
-      where: { id: areaId },
       include: {
         activityTemplate: {
           select: { name: true }
@@ -91,22 +63,49 @@ export class AreaService {
       }
     });
 
-    if (!area) throw new NotFoundException("Area not found");
-
-    return area.activityTemplateId === null
-      ? {
-        response: HttpStatus.OK,
-        data: {
-          area: area,
-          activity: []
-        }
-      }
-      : area.problemId !== null
-        ? await this.activityService.findAllProblemByAreaId(areaId)
-        : await this.activityService.findAllActivityByAreaId(areaId)
+    return {
+      status: HttpStatus.OK,
+      data: {
+        area: area
+      },
+    }
   }
 
-  async createData(userId: number, data: any) {
+  async findAllByUserId(userId: number) {
+    const area = await this.db.area.findMany({
+      where: { userId },
+      include: {
+        activityTemplate: {
+          select: { name: true }
+        }
+      }
+    });
+
+    return {
+      status: HttpStatus.OK,
+      data: {
+        area: area
+      },
+    }
+  }
+
+  async findById(areaId: string) {
+    const area = await this.db.area.findFirst({
+      where: { id: areaId },
+    });
+
+    const activities = await this.activity.findAll(areaId)
+
+    return {
+      status: HttpStatus.OK,
+      data: {
+        area: area,
+        activities: activities
+      },
+    }
+  }
+
+  async create(userId: number, data: CreateAreaDto) {
     const newArea = await this.db.area.create({
       data: {
         ...data,
@@ -114,50 +113,53 @@ export class AreaService {
       }
     });
 
-    const startActivity = await this.activityService.startActivity(newArea.id)
+    return {
+      status: HttpStatus.CREATED,
+      data: {
+        area: newArea
+      },
+    }
+  }
+
+  async addTemplateToArea(areaId: string, activityTemplateId: string) {
+    const area = await this.db.area.update({
+      where: { id: areaId },
+      data: {
+        activityTemplateId
+      }
+    })
 
     return {
-      response: HttpStatus.CREATED,
+      status: HttpStatus.OK,
       data: {
-        area: newArea,
-        activity: startActivity.data.activity
+        area: area,
       }
     }
   }
 
-  async updateData(id: string, data: any) {
-    const area = await this.db.area.findUnique({
-      where: { id }
-    })
-
-    if (!area) return new NotFoundException("Area Not Found")
-
+  async updateData(id: string, data: UpdateAreaDto) {
     const updatedArea = await this.db.area.update({
       where: { id },
       data: data
     });
 
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
         area: updatedArea
-      }
+      },
     }
   }
 
   async deleteData(id: string) {
-    const area = await this.db.area.findUnique({
-      where: { id }
-    })
-
-    if (!area) return new NotFoundException("Area Not Found")
-
     const deletedArea = await this.db.area.delete({
       where: { id }
     });
 
+    if (!deletedArea) throw new GoneException("Area not found or already deleted")
+
     return {
-      response: HttpStatus.GONE,
+      status: HttpStatus.GONE,
     }
   }
 }

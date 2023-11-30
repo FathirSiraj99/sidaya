@@ -1,22 +1,20 @@
-import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { Problem } from "@prisma/client";
+import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
+import { ProblemEntity } from "./problem.entity";
 
-export class ProblemEntity implements Problem {
-    id: string;
+export class CreateProblemDto extends OmitType(ProblemEntity, ['id']) {
+    @ApiProperty()
     name: string;
+    @ApiProperty()
     description: string;
+    @ApiProperty()
     activityTemplateId: string;
-    createdAt: Date;
-    updatedAt: Date;
 }
 
-export class ProblemDto extends PartialType(ProblemEntity) {
+export class UpdateProblemDto extends PartialType(CreateProblemDto) {
     @ApiProperty()
     name?: string;
-
     @ApiProperty()
     description?: string;
-
     @ApiProperty()
     activityTemplateId?: string;
 }

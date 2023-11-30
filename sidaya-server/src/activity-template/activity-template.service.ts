@@ -1,20 +1,34 @@
 import { GoneException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
+import { Fish } from '@prisma/client';
 import { ActivityDetailService } from 'src/activity-detail/activity-detail.service';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateActivityTemplateDto, UpdateActivityTemplateDto } from './activity-template.dto';
 
 @Injectable()
 export class ActivityTemplateService {
-  constructor(
-    private db: PrismaService,
-    private activityDetail: ActivityDetailService
-  ) { }
+  constructor(private db: PrismaService) { }
 
   async findAll() {
     const activityTemplate = await this.db.activityTemplate.findMany();
 
     return {
-      response: HttpStatus.OK,
-      data: activityTemplate
+      status: HttpStatus.OK,
+      data: {
+        activityTemplate
+      },
+    }
+  }
+
+  async findAllByFish(fish: Fish) {
+    const activityTemplate = await this.db.activityTemplate.findMany({
+      where: { fish }
+    })
+
+    return {
+      status: HttpStatus.OK,
+      data: {
+        activityTemplate
+      },
     }
   }
 
@@ -23,62 +37,50 @@ export class ActivityTemplateService {
       where: { id }
     });
 
-    const activityDetail = await this.activityDetail.findAllByTemplate(id)
-
-    if (!activityTemplate) throw new NotFoundException("Activity Template Not Found")
-
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
-        activityTemplate: activityTemplate,
-        activityDetail: activityDetail.data
-      }
+        activityTemplate
+      },
     }
   }
 
-  async createData(data: any) {
-    const createData = await this.db.activityTemplate.create({
+  async create(data: CreateActivityTemplateDto) {
+    const activityTemplate = await this.db.activityTemplate.create({
       data: data,
     });
 
     return {
-      response: HttpStatus.CREATED,
-      data: createData
+      status: HttpStatus.CREATED,
+      data: {
+        activityTemplate
+      },
     }
   }
 
-  async updateData(id: string, data: any) {
-    const activityTemplate = await this.db.activityTemplate.findUnique({
-      where: { id }
-    })
-
-    if (!activityTemplate) throw new NotFoundException("Activity Template Not Found")
-
+  async updateData(id: string, data: UpdateActivityTemplateDto) {
     const updatedActivityTemplate = await this.db.activityTemplate.update({
       where: { id },
-      data: data,
+      data: data
     });
 
     return {
-      response: HttpStatus.OK,
-      data: updatedActivityTemplate
+      status: HttpStatus.OK,
+      data: {
+        activityTemplate: updatedActivityTemplate
+      },
     }
   }
 
   async deleteData(id: string) {
-    const activityTemplate = await this.db.activityTemplate.findUnique({
-      where: { id }
-    })
-
-    if (!activityTemplate) throw new NotFoundException("Activity Template Not Found")
-
     const deletedActivityTemplate = await this.db.activityTemplate.delete({
       where: { id }
     });
 
+    if (!deletedActivityTemplate) throw new GoneException("Activity template not found or already deleted")
+
     return {
-      response: HttpStatus.OK,
-      data: deletedActivityTemplate
+      status: HttpStatus.GONE,
     }
   }
 }

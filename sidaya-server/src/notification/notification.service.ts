@@ -41,7 +41,7 @@ export class NotificationService {
         })
     }
 
-    @Cron(CronExpression.EVERY_10_HOURS)
+    @Cron(CronExpression.EVERY_30_MINUTES)
     async handleScheduledTask() {
         // Fetch users with their associated activities and details
         const usersWithActivities = await this.db.user.findMany({

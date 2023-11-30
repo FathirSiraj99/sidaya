@@ -6,6 +6,18 @@ import { PrismaService } from 'src/prisma/prisma.service';
 export class ActivityService {
   constructor(private readonly db: PrismaService,) { }
 
+  async findAll(areaId: string) {
+    const area = await this.db.area.findUnique({
+      where: { id: areaId }
+    })
+
+    if (area.problemId !== null) {
+      return await this.findAllProblemByAreaId(areaId)
+    }
+
+    return await this.findAllActivityByAreaId(areaId)
+  }
+
   async findAllActivityByAreaId(areaId: string) {
     const area = await this.db.area.findUnique({
       where: { id: areaId },
@@ -29,22 +41,12 @@ export class ActivityService {
       take: 3
     });
 
-    if (newActivity.length === 0) {
-      return {
-        response: HttpStatus.GONE,
-        data: {
-          area: area,
-          activity: []
-        }
-      }
-    }
-
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
         area: area,
         activity: newActivity
-      }
+      },
     }
   }
 
@@ -72,184 +74,80 @@ export class ActivityService {
     });
 
     if (newProblem.length === 0) {
-      return {
-        response: HttpStatus.GONE,
-        data: []
-      }
-    }
-
-    return {
-      response: HttpStatus.OK,
-      data: {
-        area: area,
-        problem: newProblem
-      }
-    }
-  }
-
-  async startActivity(areaId: string) {
-    const area = await this.db.area.findFirst({
-      where: { id: areaId }
-    })
-
-    const newActivity = await this.db.activityDetail.findMany({
-      where: { activityTemplateId: area.activityTemplateId },
-      orderBy: {
-        turn: 'asc'
-      },
-      take: 3,
-    })
-
-    const firstActivity = newActivity[0]
-
-    const updatedArea = await this.db.area.update({
-      where: { id: areaId },
-      data: { activityDetailId: firstActivity.id }
-    })
-
-    return {
-      response: HttpStatus.OK,
-      data: {
-        area: updatedArea,
-        activity: newActivity
-      }
-    }
-  }
-
-  async nextActivity(areaId: string, activityId: string) {
-    console.log(activityId)
-    const area = await this.db.area.findFirst({
-      where: { id: areaId }
-    });
-
-    if (area.problemId !== null) {
-      return await this.nextProblem(areaId, activityId)
-    }
-
-    const activityDetail = await this.db.activityDetail.findUnique({
-      where: { id: activityId }
-    })
-
-    if (area.nthDay < activityDetail.nthDay) {
-      return await this.findAllActivityByAreaId(areaId)
-    }
-
-    const updatedArea = await this.db.area.update({
-      where: { id: area.id },
-      data: {
-        activityDetailId: activityId
-      }
-    });
-
-    const newActivity = await this.db.activityDetail.findMany({
-      where: {
-        activityTemplateId: updatedArea.activityTemplateId,
-        turn: {
-          gte: activityDetail.turn
-        }
-      },
-      select: {
-        id: true,
-        name: true
-      },
-      orderBy: {
-        turn: 'asc'
-      },
-      take: 3
-    });
-
-    if (newActivity.length === 0) {
-      const updatedArea = await this.db.area.update({
-        where: { id: areaId },
-        data: {
-          activityTemplateId: null,
-          activityDetailId: null
-        }
-      })
-      return {
-        response: HttpStatus.OK,
-        data: {
-          area: updatedArea,
-          activity: []
-        }
-      }
-    }
-
-    return {
-      response: HttpStatus.OK,
-      area: updatedArea,
-      activity: newActivity
-    }
-  }
-
-  async nextProblem(areaId: string, activityId: string) {
-
-    const area = await this.db.area.findUnique({
-      where: { id: areaId }
-    })
-
-    const problemDetail = await this.db.problemDetail.findUnique({
-      where: { id: activityId }
-    })
-
-    if (area.nthDay < problemDetail.nthDay) {
-      return await this.findAllProblemByAreaId(areaId)
-    }
-
-    const updatedArea = await this.db.area.update({
-      where: { id: areaId },
-      data: {
-        problemDetailId: activityId
-      }
-    });
-
-    const newProblem = await this.db.problemDetail.findMany({
-      where: {
-        problemId: updatedArea.problemId,
-        turn: {
-          gte: problemDetail.turn
-        }
-      },
-      select: {
-        id: true,
-        name: true
-      },
-      orderBy: {
-        turn: 'asc'
-      },
-      take: 3
-    });
-
-    if (newProblem.length === 0) {
       const activityDetail = await this.db.activityDetail.findUnique({
         where: { id: area.activityDetailId }
       })
 
-      const updatedArea = await this.db.area.update({
+      await this.db.area.update({
         where: { id: areaId },
         data: {
-          nthDay: activityDetail.nthDay,
+          nthDay: activityDetail.nthDay - 1,
           problemId: null,
           problemDetailId: null
         }
       })
 
-      return {
-        response: HttpStatus.OK,
-        data: {
-          area: updatedArea,
-          activity: []
-        }
-      }
+      return await this.findAllActivityByAreaId(area.id)
     }
 
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
-        area: updatedArea,
-        problem: newProblem
+        area: area,
+        problem: newProblem,
       }
     }
+  }
+
+  async nextActivity(areaId: string, activityDetailId: string) {
+    const area = await this.db.area.findFirst({
+      where: { id: areaId }
+    });
+
+    const activityDetail = await this.db.activityDetail.findUnique({
+      where: { id: activityDetailId }
+    })
+
+    if (area.nthDay < activityDetail.nthDay) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+        message: "Aktivitas tidak dapat dilakukan pada hari ini."
+      }
+    }
+
+    const updatedArea = await this.db.area.update({
+      where: { id: area.id },
+      data: {
+        activityDetailId
+      }
+    });
+
+    return await this.findAllActivityByAreaId(updatedArea.id)
+  }
+
+  async nextProblem(areaId: string, problemDetailId: string) {
+    const area = await this.db.area.findUnique({
+      where: { id: areaId }
+    })
+
+    const problemDetail = await this.db.problemDetail.findUnique({
+      where: { id: problemDetailId }
+    })
+
+    if (area.nthDay < problemDetail.nthDay) {
+      return {
+        status: HttpStatus.BAD_REQUEST,
+      }
+    }
+
+    const updatedArea = await this.db.area.update({
+      where: { id: areaId },
+      data: {
+        problemDetailId
+      }
+    });
+
+    return await this.findAllProblemByAreaId(updatedArea.id)
   }
 
   async includeProblem(areaId: string, problemId: string) {
@@ -285,10 +183,10 @@ export class ActivityService {
     })
 
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
         area: updatedArea,
-        problem: newProblem
+        problem: newProblem,
       }
     }
   }

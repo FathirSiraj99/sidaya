@@ -32,9 +32,10 @@ export class AuthService {
         const { password: newUserPassword, ...rest } = user
 
         return {
-            Response: 201,
-            message: "User successfully created",
-            user: rest
+            status: HttpStatus.CREATED,
+            data: {
+                user: rest
+            },
         }
 
     }
@@ -57,7 +58,7 @@ export class AuthService {
         const payload = { sub: user.id, username: user.username, role: user.roles }
 
         return {
-            response: HttpStatus.OK,
+            status: HttpStatus.OK,
             access_token: await this.jwt.signAsync(payload)
         }
     }

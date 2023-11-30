@@ -1,103 +1,151 @@
 import { GoneException, HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateActivityDetailDto, UpdateActivityDetailDto } from './activity-detail.dto';
 
 @Injectable()
 export class ActivityDetailService {
   constructor(private db: PrismaService) { }
 
-  async findAllByTemplate(id: string) {
+  async findAllByActivityTemplate(activityTemplateId: string) {
     const activityDetail = await this.db.activityDetail.findMany({
       where: {
-        activityTemplateId: id
+        activityTemplateId
       },
       orderBy: { turn: 'asc' },
     })
 
-    if (activityDetail.length === 0) {
-      return {
-        response: HttpStatus.OK,
-        data: []
-      }
+    return {
+      status: HttpStatus.OK,
+      data: {
+        activityDetail
+      },
     }
+  }
+
+  async findAll() {
+    const activityDetail = await this.db.activityDetail.findMany({
+      orderBy: {
+        activityTemplate: {
+          name: 'asc'
+        }
+      }
+    })
 
     return {
-      response: HttpStatus.OK,
-      data: activityDetail
+      status: HttpStatus.OK,
+      data: {
+        activityDetail
+      },
     }
   }
 
   async findById(id: string) {
     const activityDetail = await this.db.activityDetail.findUnique({
-      where: { id },
-      include: {
-        activityTemplate: {
-          select: {
-            name: true,
-          },
-        },
-      },
+      where: { id }
     });
 
-    if (!activityDetail) {
-      throw new NotFoundException("Activity Detail Tidak Ada")
-    }
-
     return {
-      response: HttpStatus.OK,
-      data: activityDetail
+      status: HttpStatus.OK,
+      data: {
+        activityDetail
+      },
     }
   }
 
-  async createData(data: any) {
+  async create(data: CreateActivityDetailDto) {
     const timeWithSeconds = `${data.time}:00`;
 
-    const createData = await this.db.activityDetail.create({
+    const existingActivityDetails = await this.findAllByActivityTemplate(data.activityTemplateId);
+
+    if (existingActivityDetails && existingActivityDetails.data.activityDetail.length > 0) {
+      const maxTurn = existingActivityDetails.data.activityDetail.reduce((max, current) => {
+        return current.turn > max ? current.turn : max;
+      }, 0);
+
+      // Gunakan nilai maxTurn untuk membuat data baru
+      const newActivityDetail = await this.db.activityDetail.create({
+        data: {
+          ...data,
+          time: timeWithSeconds,
+          turn: maxTurn + 1 // Gunakan nilai maxTurn + 1 sebagai nilai turn berikutnya
+        },
+      });
+
+      return {
+        status: HttpStatus.CREATED,
+        data: {
+          activityDetail: newActivityDetail
+        }
+      }
+    }
+
+    const activityDetail = await this.db.activityDetail.create({
       data: {
         ...data,
-        time: timeWithSeconds
+        time: timeWithSeconds,
+        turn: 1
       },
     });
 
     return {
-      response: HttpStatus.CREATED,
-      data: createData
+      status: HttpStatus.CREATED,
+      data: {
+        activityDetail
+      },
     }
   }
 
-  async updateData(id: string, data: any) {
-    const activityDetail = await this.db.activityDetail.findUnique({
-      where: { id }
-    })
-
-    if (!activityDetail) return new NotFoundException("Activity Detail Not Found")
-
+  async updateData(id: string, data: UpdateActivityDetailDto) {
     const updatedActivityDetail = await this.db.activityDetail.update({
-      data: data,
-      where: {
-        id: id,
-      },
+      where: { id },
+      data
     });
 
     return {
-      response: HttpStatus.OK,
-      data: updatedActivityDetail
+      status: HttpStatus.OK,
+      data: {
+        activityDetail: updatedActivityDetail
+      },
     }
   }
 
   async deleteData(id: string) {
-    const activityDetail = await this.db.activityDetail.findUnique({
+    const activityDetailToDelete = await this.findById(id)
+    const turnToDelete = activityDetailToDelete.data.activityDetail.turn
+
+    await this.db.activityDetail.delete({
       where: { id }
     })
 
-    if (!activityDetail) return new NotFoundException("Activity Detail Not Found")
+    const activityDetail = await this.db.activityDetail.findMany({
+      where: {
+        turn: {
+          gt: turnToDelete
+        }
+      }
+    })
 
-    const deletedActivityDetail = await this.db.activityDetail.delete({
-      where: { id }
-    });
+    if (activityDetail) {
+      await this.db.activityDetail.updateMany({
+        where: {
+          turn: {
+            gt: turnToDelete
+          }
+        },
+        data: {
+          turn: {
+            decrement: 1
+          }
+        }
+      })
+
+      return {
+        status: HttpStatus.GONE,
+      }
+    }
 
     return {
-      response: HttpStatus.OK,
-      data: deletedActivityDetail
+      status: HttpStatus.GONE
     }
   }
 }

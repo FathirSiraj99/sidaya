@@ -1,67 +1,77 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, Res, UseGuards } from '@nestjs/common';
+import { ApiBearerAuth, ApiBody, ApiOperation, ApiResponse, ApiTags, ApiParam } from '@nestjs/swagger';
 import { AreaService } from './area.service';
 import { AuthGuard } from 'src/auth/guard/auth.guard';
 import { RolesGuard } from 'src/auth/guard/roles.guard';
 import { Roles } from 'src/auth/roles.decorator';
 import { Role } from '@prisma/client';
+import { CreateAreaDto, UpdateAreaDto } from './area.dto';
+import { UserService } from 'src/user/user.service';
+import { Response } from 'express';
 
-@ApiBearerAuth() // Jika menggunakan Bearer Authentication
+@ApiBearerAuth() // Menandakan bahwa autentikasi token bearer diperlukan
 @ApiTags('Area') // Menambahkan tag untuk dokumentasi Swagger
-@UseGuards(AuthGuard, RolesGuard)
+// @UseGuards(AuthGuard, RolesGuard)
 @Controller('area')
 export class AreaController {
-  constructor(private Areaservice: AreaService) { }
-
-  @Roles(Role.ADMIN)
-  @ApiOperation({ summary: 'Get all areas' })
-  @Get('find-all')
-  async getAll() {
-    return await this.Areaservice.findAll();
-  }
+  constructor(
+    private areaService: AreaService,
+    private userService: UserService
+  ) { }
 
   @ApiOperation({ summary: 'Get all areas by user ID' })
-  @Get('find-all/user')
-  async getAllByUserId(@Req() req) {
+  @Get('find')
+  async getAll(@Req() req, @Res() res: Response) {
     const userId = req.user.sub
-    return await this.Areaservice.findAllByUserId(userId)
+    const user = await this.userService.findById(userId)
+
+    if (user.data.user.roles === Role.ADMIN) {
+      const area = await this.areaService.findAll()
+      return res.status(area.status).json(area)
+    }
+
+    const area = await this.areaService.findAllByUserId(userId)
+    return res.status(area.status).json(area)
   }
 
   @ApiOperation({ summary: 'Get area by ID' })
+  @ApiParam({ name: 'id', description: 'Area ID' })
   @ApiResponse({ status: 200, description: 'The area has been successfully retrieved.' })
-  @ApiResponse({ status: 404, description: 'Area not found.' })
   @Get('find/:id')
-  async getById(@Param('id') id: string) {
-    return await this.Areaservice.findById(id);
+  async getById(@Param('id') id: string, @Res() res: Response) {
+    const area = await this.areaService.findById(id);
+    return res.status(area.status).json(area)
   }
 
   @ApiOperation({ summary: 'Create a new area' })
   @ApiResponse({ status: 201, description: 'The area has been successfully created.' })
+  @ApiBody({ type: CreateAreaDto })
   @Post('create')
-  async create(@Req() req, @Body() data: any) {
+  async create(@Req() req, @Body() data: CreateAreaDto, @Res() res: Response) {
     const userId = req.user.sub
     const diameter = data.volume;
-    const volume = 3.14159 * diameter * diameter;
+    const volume = Math.PI * diameter * diameter;
     data.volume = volume;
 
-    return await this.Areaservice.createData(userId, data);
+    const area = await this.areaService.create(userId, data);
+    return res.status(area.status).json(area)
   }
 
-  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Update area by ID' })
+  @ApiParam({ name: 'id', description: 'Area ID' })
   @ApiResponse({ status: 200, description: 'The area has been successfully updated.' })
-  @ApiResponse({ status: 404, description: 'Area not found.' })
   @Patch('update/:id')
-  async update(@Param('id') id: string, @Body() data: any) {
-    return await this.Areaservice.updateData(id, data);
+  async update(@Param('id') id: string, @Body() data: UpdateAreaDto, @Res() res: Response) {
+    const area = await this.areaService.updateData(id, data);
+    return res.status(area.status).json(area)
   }
 
-  @Roles(Role.ADMIN)
   @ApiOperation({ summary: 'Delete area by ID' })
+  @ApiParam({ name: 'id', description: 'Area ID' })
   @ApiResponse({ status: 200, description: 'The area has been successfully deleted.' })
-  @ApiResponse({ status: 404, description: 'Area not found.' })
   @Delete('delete/:id')
-  async delete(@Param('id') id: string) {
-    return await this.Areaservice.deleteData(id);
+  async delete(@Param('id') id: string, @Res() res: Response) {
+    const area = await this.areaService.deleteData(id);
+    return res.status(area.status).json(area)
   }
 }

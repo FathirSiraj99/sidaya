@@ -1,20 +1,21 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateProblemDto, UpdateProblemDto } from './problem.dto';
 
 @Injectable()
 export class ProblemService {
   constructor(private db: PrismaService) { }
 
-  async createData(data: any) {
+  async create(data: CreateProblemDto) {
     const newProblem = await this.db.problem.create({
       data: data
     })
 
     return {
-      response: HttpStatus.CREATED,
+      status: HttpStatus.CREATED,
       data: {
         problem: newProblem
-      }
+      },
     }
   }
 
@@ -23,14 +24,8 @@ export class ProblemService {
       where: { activityTemplateId }
     });
 
-    if (!problem) {
-      return {
-        response: HttpStatus.NOT_FOUND
-      }
-    }
-
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
         problem: problem
       }
@@ -40,17 +35,11 @@ export class ProblemService {
   async findAll() {
     const problem = await this.db.problem.findMany();
 
-    if (!problem) {
-      return {
-        response: HttpStatus.NOT_FOUND
-      }
-    }
-
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
         problem: problem
-      }
+      },
     }
   }
 
@@ -59,51 +48,41 @@ export class ProblemService {
       where: { id }
     });
 
-    if (!problem) {
-      return {
-        response: HttpStatus.NOT_FOUND
-      }
-    }
-
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
-        problem: problem
+        problem
       }
     }
   }
 
-  async update(id: string, data: any) {
-    const problem = await this.db.problem.update({
+  async update(id: string, data: UpdateProblemDto) {
+    const updatedProblem = await this.db.problem.update({
       where: { id },
       data: data
     });
 
-    if (!problem) {
-      return {
-        response: HttpStatus.NOT_FOUND
-      }
-    }
-
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
-        problem: problem
+        problem: updatedProblem
       }
     }
   }
 
   async remove(id: string) {
-    const deletedProblemDetail = await this.db.problemDetail.deleteMany({
+    // Hapus terlebih dahulu detail terkait problem jika perlu
+    await this.db.problemDetail.deleteMany({
       where: { problemId: id }
-    })
+    });
 
-    const deletedProblem = await this.db.problem.delete({
+    // Hapus problem itu sendiri
+    await this.db.problem.delete({
       where: { id }
     });
 
     return {
-      response: HttpStatus.GONE
+      status: HttpStatus.GONE,
     }
   }
 }

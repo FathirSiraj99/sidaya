@@ -22,7 +22,7 @@ export class NotificationController {
     }
 
     @ApiOperation({ summary: 'Get all notifications for a user' })
-    @Get('')
+    @Get('find')
     async findAllByUser(@Req() req: any) {
         const userId = req.user.sub
         return await this.notificationService.findAllByUser(userId)

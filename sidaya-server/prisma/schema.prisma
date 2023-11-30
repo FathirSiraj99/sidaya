@@ -13,6 +13,7 @@ datasource db {
 model ActivityTemplate {
   id             String           @id @default(uuid())
   name           String
+  fish           Fish?
   createdAt      DateTime?        @default(now()) @map(name: "created_at")
   updatedAt      DateTime?        @updatedAt @map(name: "updated_at")
   area           Area[]
@@ -27,7 +28,7 @@ model ActivityDetail {
   name               String
   description        String?
   time               String
-  turn               String
+  turn               Int
   nthDay             Int               @default(1) @map(name: "nth_day")
   formula            Json?
   activityTemplateId String            @map(name: "activity_template")
@@ -87,6 +88,7 @@ model Area {
   problemId          String?           @map(name: "problem_id")
   problemDetailId    String?           @map(name: "problem_detail_id")
   nthDay             Int               @default(1) @map(name: "nth_day")
+  fish               Fish?
   activityTemplate   ActivityTemplate? @relation(fields: [activityTemplateId], references: [id])
   ActivityDetail     ActivityDetail?   @relation(fields: [activityDetailId], references: [id])
   User               User?             @relation(fields: [userId], references: [id])
@@ -125,4 +127,9 @@ model User {
 enum Role {
   USER
   ADMIN
+}
+
+enum Fish {
+  LELE
+  TONGKOL
 }

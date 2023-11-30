@@ -1,34 +1,33 @@
-import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { Prisma, ProblemDetail } from "@prisma/client";
+import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
+import { ProblemDetailEntity } from "./problem-detail.entity.";
+import { Prisma } from "@prisma/client";
 
-export class ProblemDetailEntity implements ProblemDetail {
-    id: string;
+export class CreateProblemDetailDto extends OmitType(ProblemDetailEntity, ['id']) {
+    @ApiProperty()
     name: string;
+    @ApiProperty()
     formula: Prisma.JsonValue;
-    problemId: string;
-    time: string;
+    @ApiProperty()
     nthDay: number;
+    @ApiProperty()
+    time: string;
+    @ApiProperty()
     turn: string;
-    createdAt: Date;
-    updatedAt: Date;
+    @ApiProperty()
+    problemId: string;
 }
 
-export class ProblemDetailDto extends PartialType(ProblemDetailEntity) {
+export class UpdateProblemDetailDto extends PartialType(CreateProblemDetailDto) {
     @ApiProperty()
-    name?: string;
-
+    name: string;
     @ApiProperty()
-    formula?: Prisma.JsonValue;
-
+    formula: Prisma.JsonValue;
     @ApiProperty()
-    nthDay?: number;
-
+    nthDay: number;
     @ApiProperty()
-    problemId?: string;
-
+    time: string;
     @ApiProperty()
-    time?: string;
-
+    turn: string;
     @ApiProperty()
-    turn?: string;
+    problemId: string;
 }

@@ -1,17 +1,18 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateProblemDetailDto, UpdateProblemDetailDto } from './problem-detail.dto';
 
 @Injectable()
 export class ProblemDetailService {
   constructor(private db: PrismaService) { }
 
-  async createData(data: any) {
+  async createData(data: CreateProblemDetailDto) {
     const newProblemDetail = await this.db.problemDetail.create({
-      data: data
+      data
     })
 
     return {
-      response: HttpStatus.CREATED,
+      status: HttpStatus.CREATED,
       data: {
         problemDetail: newProblemDetail
       }
@@ -20,17 +21,12 @@ export class ProblemDetailService {
 
   async findAllByProblem(problemId: string) {
     const problemDetail = await this.db.problemDetail.findMany({
-      where: { problemId }
+      where: { problemId },
+      orderBy: { turn: 'asc' }
     });
 
-    if (!problemDetail) {
-      return {
-        response: HttpStatus.NOT_FOUND
-      }
-    }
-
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
         problemDetail: problemDetail
       }
@@ -38,19 +34,12 @@ export class ProblemDetailService {
   }
 
   async findAll() {
-    const problemDetail = await this.db.problemDetail.findMany();
-
-    if (!problemDetail) {
-      return {
-        response: HttpStatus.GONE,
-        data: {
-          problemDetail: []
-        }
-      }
-    }
+    const problemDetail = await this.db.problemDetail.findMany({
+      orderBy: { problemId: "asc", turn: "asc" }
+    });
 
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
         problemDetail: problemDetail
       }
@@ -58,38 +47,26 @@ export class ProblemDetailService {
   }
 
   async findOne(id: string) {
-    const problemDetail = await this.db.problemDetail.findFirst({
+    const problemDetail = await this.db.problemDetail.findUnique({
       where: { id }
     });
 
-    if (!problemDetail) {
-      return {
-        response: HttpStatus.NOT_FOUND,
-      }
-    }
-
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
         problemDetail: problemDetail
       }
     }
   }
 
-  async update(id: string, data: any) {
+  async update(id: string, data: UpdateProblemDetailDto) {
     const updatedProblemDetail = await this.db.problemDetail.update({
       where: { id },
       data: data
     });
 
-    if (!updatedProblemDetail) {
-      return {
-        response: HttpStatus.NOT_FOUND
-      }
-    }
-
     return {
-      response: HttpStatus.OK,
+      status: HttpStatus.OK,
       data: {
         problemDetail: updatedProblemDetail
       }
@@ -97,18 +74,12 @@ export class ProblemDetailService {
   }
 
   async delete(id: string) {
-    const deletedProblemDetail = await this.db.problemDetail.delete({
+    await this.db.problemDetail.delete({
       where: { id }
     });
 
-    if (!deletedProblemDetail) {
-      return {
-        response: HttpStatus.NOT_FOUND
-      }
-    }
-
     return {
-      response: HttpStatus.GONE
+      status: HttpStatus.GONE,
     }
   }
 }
